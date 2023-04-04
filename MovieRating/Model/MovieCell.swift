@@ -11,7 +11,6 @@ class MovieCell: UITableViewCell {
         
     var thumbnailImage: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(named: "poster")
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
