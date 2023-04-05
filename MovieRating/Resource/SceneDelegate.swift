@@ -20,10 +20,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         
         let homeTableViewController = UINavigationController(rootViewController: HomeTableViewController())
-        let myListViewController = UINavigationController(rootViewController: MyListViewController())
+        let storageViewController = UINavigationController(rootViewController: StorageViewController())
         
         let tabBarController = UITabBarController()
-        tabBarController.setViewControllers([homeTableViewController, myListViewController], animated: true)
+        tabBarController.setViewControllers([homeTableViewController, storageViewController], animated: true)
         
         if let items = tabBarController.tabBar.items {
             items[0].title = "홈"

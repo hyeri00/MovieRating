@@ -7,10 +7,9 @@
 
 import UIKit
 import SDWebImage
-import SafariServices
 
 class HomeTableViewController: UITableViewController {
-    
+
     private var movieTableView: UITableView = {
         let view = UITableView()
         view.backgroundColor = .white
@@ -67,7 +66,7 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func searchMovies(query: String) {
-        
+
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "api.themoviedb.org"
@@ -77,15 +76,15 @@ class HomeTableViewController: UITableViewController {
             URLQueryItem(name: "query", value: query),
             URLQueryItem(name: "language", value: "ko-KR")
         ]
-        
+
         guard let url = urlComponents.url else {
-            print("유효하지 않는 URL")
-            return
-        }
-        
+              print("유효하지 않는 URL")
+              return
+          }
+
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
+            request.httpMethod = "GET"
+
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
                 print(error?.localizedDescription ?? "Unknown error")
@@ -116,26 +115,14 @@ extension HomeTableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
         let movie = movies[indexPath.row]
+        cell.titleAndYearLabel.text = "\(movie.title) (\(movie.releaseDate))"
         if let posterPath = movie.posterPath {
             let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
             cell.thumbnailImage.sd_setImage(with: posterURL, placeholderImage: UIImage(named: "placeholder"))
         }
-        cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
-        cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
-        cell.ratingLabel.text = "\(movie.voteAverage ?? 0.0)"
-        cell.storageButton.isEnabled = true
-        cell.storageButton.isSelected = true
-        cell.storageButton.isUserInteractionEnabled = true
+
         return cell
     }
-    
-//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        let movie = movies[indexPath.row]
-//        let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)")!
-//
-//        let safariViewController = SFSafariViewController(url: movieURL)
-//        present(safariViewController, animated: true, completion: nil)
-//    }
 }
 
 
@@ -146,6 +133,7 @@ extension HomeTableViewController: UISearchBarDelegate {
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+            
         guard let searchTerm = searchBar.text, searchTerm.isEmpty == false else { return }
         
         DispatchQueue.main.async {
@@ -154,9 +142,26 @@ extension HomeTableViewController: UISearchBarDelegate {
         
         if let text = searchBar.text {
             query = text
-            
+
             searchMovies(query: query!)
             print("\(text)")
         }
+    }
+}
+
+
+struct Response: Codable {
+    let results: [Movie]
+}
+
+struct Movie: Codable {
+    let title: String
+    let releaseDate: String
+    let posterPath: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case title = "title"
+        case releaseDate = "release_date"
+        case posterPath = "poster_path"
     }
 }
