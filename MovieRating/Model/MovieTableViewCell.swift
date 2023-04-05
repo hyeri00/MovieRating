@@ -1,5 +1,5 @@
 //
-//  MovieCell.swift
+//  MovieTableViewCell.swift
 //  MovieRating
 //
 //  Created by 혜리 on 2023/04/03.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class MovieCell: UITableViewCell {
+class MovieTableViewCell: UITableViewCell {
         
     var thumbnailImage: UIImageView = {
         let image = UIImageView()
@@ -60,7 +60,6 @@ class MovieCell: UITableViewCell {
         button.setImage(UIImage(systemName: "bookmark"), for: .normal)
         button.tintColor = .black
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(storageSendMovie), for: .touchUpInside)
         return button
     }()
     
@@ -70,7 +69,7 @@ class MovieCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         addViews()
-//        setupAddTarget()
+        setupAddTarget()
         setTableViewCell()
         setConstraints()
     }
@@ -87,9 +86,9 @@ class MovieCell: UITableViewCell {
         addSubview(storageButton)
     }
     
-//    private func setupAddTarget() {
-//        storageButton.addTarget(self, action: #selector(storageSendMovie), for: .touchUpInside)
-//    }
+    private func setupAddTarget() {
+        storageButton.addTarget(self, action: #selector(storageSendMovie), for: .touchUpInside)
+    }
     
     private func setTableViewCell() {
         selectionStyle = .none
@@ -133,51 +132,8 @@ class MovieCell: UITableViewCell {
                             buttonTitle: "바로 가기")
         } else {
             storageButton.isSelected = true
-            storageButton.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
+            storageButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
             storageButton.tintColor = .black
         }
     }
 }
-
-//class MovieCell: UITableViewCell {
-//    
-//    var storageButton: UIButton = {
-//        let button = UIButton(type: .custom)
-//        button.setImage(UIImage(systemName: "bookmark"), for: .normal)
-//        button.tintColor = .black
-//        button.translatesAutoresizingMaskIntoConstraints = false
-//        return button
-//    }()
-//    
-//    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-//        super.init(style: style, reuseIdentifier: reuseIdentifier)
-//        
-//        addViews()
-//        setupAddTarget()
-//    }
-//    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-//    
-//    private func addViews() {
-//        addSubview(storageButton)
-//    }
-//    
-//    private func setupAddTarget() {
-//        storageButton.addTarget(self, action: #selector(storageSendMovie), for: .touchUpInside)
-//    }
-//    
-//    @objc private func storageSendMovie() {
-//        if storageButton.isSelected == true {
-//            storageButton.isSelected = false
-//            storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
-//            storageButton.tintColor = .black
-//        } else {
-//            storageButton.isSelected = true
-//            let image = UIImage(systemName: "bookmark.fill")
-//            storageButton.setImage(image, for: .selected)
-//            storageButton.tintColor = .black
-//        }
-//    }
-//}
