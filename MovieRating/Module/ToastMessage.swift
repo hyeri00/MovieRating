@@ -11,7 +11,7 @@ import SnapKit
 class ToastMessage {
     var toastViews = [UIView?]()
     
-    func showToast(image: UIImage, message: String, buttonTitle: String) {
+    func showToast(image: UIImage, message: String) {
         let toastView = UIView()
         toastViews.append(toastView)
         
@@ -27,7 +27,7 @@ class ToastMessage {
                 $0.width.equalTo(327)
                 $0.height.equalTo(58)
                 $0.centerX.equalToSuperview()
-                $0.bottom.equalToSuperview().offset(-320)
+                $0.bottom.equalToSuperview().offset(-48)
             })
             
             let img = UIImageView()
@@ -49,18 +49,6 @@ class ToastMessage {
                 $0.centerY.equalToSuperview()
             })
             
-            let button = UIButton(type: .custom)
-            toastView.addSubview(button)
-            button.setTitle(buttonTitle, for: .normal)
-            button.setTitleColor(.black, for: .normal)
-            button.backgroundColor = .clear
-            button.titleLabel?.font = .boldSystemFont(ofSize: 14)
-            button.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
-            button.snp.makeConstraints({
-                $0.left.equalTo(250)
-                $0.centerY.equalToSuperview()
-            })
-            
             UIView.animate(withDuration: 4.0, delay: 0.0, options: [.curveEaseOut], animations: {
                 toastView.alpha = 1.0
             })
@@ -70,8 +58,5 @@ class ToastMessage {
                 toastView.removeFromSuperview()
             })
         }
-    }
-    
-    @objc func buttonAction() {
     }
 }

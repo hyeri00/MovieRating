@@ -11,28 +11,38 @@ struct Response: Codable {
     let results: [Movie]
 }
 
-struct Movie: Codable {
+struct Movie: Codable, Equatable {
     let id: Int
     let posterPath: String?
     let title: String
     let releaseDate: String
     let genreIds: [Int]
     let voteAverage: Double?
+
     var genres: [Genre] {
         return genreIds.compactMap { id in
             return GenreList.shared.genres.first { $0.id == id }
         }
     }
-    
+
     var year: String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         guard let date = dateFormatter.date(from: releaseDate) else { return "" }
-        
+
         dateFormatter.dateFormat = "yyyy"
         return dateFormatter.string(from: date)
     }
-    
+
+    static func == (lhs: Movie, rhs: Movie) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.posterPath == rhs.posterPath &&
+               lhs.title == rhs.title &&
+               lhs.releaseDate == rhs.releaseDate &&
+               lhs.genreIds == rhs.genreIds &&
+               lhs.voteAverage == rhs.voteAverage
+    }
+
     enum CodingKeys: String, CodingKey {
         case id = "id"
         case posterPath = "poster_path"
@@ -42,6 +52,7 @@ struct Movie: Codable {
         case voteAverage = "vote_average"
     }
 }
+
 
 struct Genre: Codable {
     let id: Int

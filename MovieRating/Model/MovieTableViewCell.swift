@@ -55,7 +55,7 @@ class MovieTableViewCell: UITableViewCell {
         return view
     }()
     
-    var storageButton: UIButton = {
+    lazy var storageButton: UIButton = {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bookmark"), for: .normal)
         button.tintColor = .black
@@ -63,7 +63,9 @@ class MovieTableViewCell: UITableViewCell {
         return button
     }()
     
+    var movie: Movie?
     private let toast = ToastMessage()
+    weak var delegate: MovieTableViewCellDelegate?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -78,14 +80,23 @@ class MovieTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func awakeFromNib() {
+        super.awakeFromNib()
+    }
+    
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+    }
+    
     private func addViews() {
         addSubview(thumbnailImage)
         addSubview(titleAndYearLabel)
         addSubview(genreLabel)
         addSubview(ratingStackView)
-        addSubview(storageButton)
+        contentView.addSubview(storageButton)
     }
     
+
     private func setupAddTarget() {
         storageButton.addTarget(self, action: #selector(storageSendMovie), for: .touchUpInside)
     }
@@ -122,18 +133,21 @@ class MovieTableViewCell: UITableViewCell {
         ])
     }
     
-    @objc private func storageSendMovie() {
-        if storageButton.isSelected == true {
+    @objc private func storageButtonTapped(_ sender: UIButton) {
+        if storageButton.isSelected {
             storageButton.isSelected = false
             storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
             storageButton.tintColor = .black
-            toast.showToast(image: UIImage(named: "checkmark.circle")!,
-                            message: "보관함에 저장 되었습니다.",
-                            buttonTitle: "바로 가기")
         } else {
             storageButton.isSelected = true
             storageButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
             storageButton.tintColor = .black
+            toast.showToast(image: (UIImage(systemName: "checkmark.circle.fill")!),
+                            message: "보관함에 저장 되었습니다.")
         }
+    }
+    
+    @objc private func storageButtonTappedd(_ sender: Any) {
+        delegate?.didTapLikeButton(cell: self)
     }
 }

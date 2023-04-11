@@ -15,13 +15,17 @@ class HomeTableViewController: UITableViewController {
         let view = UITableView()
         view.backgroundColor = .white
         view.rowHeight = 120
-        view.register(MovieCell.self, forCellReuseIdentifier: "MovieCell")
+        view.register(MovieTableViewCell.self, forCellReuseIdentifier: "MovieTableViewCell")
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     var movies = [Movie]()
     var query: String?
+    var data =  [(thumbnailImage: UIImage?, titleAndYear: String?)]()
+    var cells: [MovieTableViewCell] = []
+    private let toast = ToastMessage()
+    var selectedData: Any?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -104,6 +108,24 @@ class HomeTableViewController: UITableViewController {
         }
         task.resume()
     }
+    
+    func getDataCell(at indexPath: IndexPath) -> Any {
+        let cell = cells[indexPath.row]
+        let thumbnailImage = cell.thumbnailImage.image
+        let titleAndYearLabel = cell.titleAndYearLabel.text
+        return (thumbnailImage, titleAndYearLabel)
+    }
+    
+    @objc private func storageButtonTapped(_ sender: UIButton) {
+        let selectedData = getDataCell(at: IndexPath(row: sender.tag, section: 0))
+        if let (thumbnailImage, titleAndYearLabel) = selectedData as? (UIImage?, String?) {
+            print("Selected thumbnailImage: \(String(describing: thumbnailImage))")
+            print("Selected titleAndYearLabel: \(String(describing: titleAndYearLabel))")
+        } else {
+            print("Error: Failed to get selected data")
+        }
+        movieTableView.deselectRow(at: IndexPath(row: sender.tag, section: 0), animated: true)
+    }
 }
 
 
@@ -114,7 +136,7 @@ extension HomeTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieTableViewCell", for: indexPath) as! MovieTableViewCell
         let movie = movies[indexPath.row]
         if let posterPath = movie.posterPath {
             let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
@@ -123,21 +145,19 @@ extension HomeTableViewController {
         cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
         cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
         cell.ratingLabel.text = "\(movie.voteAverage ?? 0.0)"
-        cell.storageButton.isEnabled = true
-        cell.storageButton.isSelected = true
-        cell.storageButton.isUserInteractionEnabled = true
+        cells.append(cell)
+        cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
         return cell
     }
     
-//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        let movie = movies[indexPath.row]
-//        let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)")!
-//
-//        let safariViewController = SFSafariViewController(url: movieURL)
-//        present(safariViewController, animated: true, completion: nil)
-//    }
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let movie = movies[indexPath.row]
+        let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)")!
+        
+        let safariViewController = SFSafariViewController(url: movieURL)
+        present(safariViewController, animated: true, completion: nil)
+    }
 }
-
 
 extension HomeTableViewController: UISearchBarDelegate {
     
