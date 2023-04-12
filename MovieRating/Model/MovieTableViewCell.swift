@@ -65,7 +65,6 @@ class MovieTableViewCell: UITableViewCell {
     
     var movie: Movie?
     private let toast = ToastMessage()
-    weak var delegate: MovieTableViewCellDelegate?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -80,14 +79,6 @@ class MovieTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
-    }
-    
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-    }
-    
     private func addViews() {
         addSubview(thumbnailImage)
         addSubview(titleAndYearLabel)
@@ -98,7 +89,7 @@ class MovieTableViewCell: UITableViewCell {
     
 
     private func setupAddTarget() {
-        storageButton.addTarget(self, action: #selector(storageSendMovie), for: .touchUpInside)
+        storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
     }
     
     private func setTableViewCell() {
@@ -145,9 +136,5 @@ class MovieTableViewCell: UITableViewCell {
             toast.showToast(image: (UIImage(systemName: "checkmark.circle.fill")!),
                             message: "보관함에 저장 되었습니다.")
         }
-    }
-    
-    @objc private func storageButtonTappedd(_ sender: Any) {
-        delegate?.didTapLikeButton(cell: self)
     }
 }

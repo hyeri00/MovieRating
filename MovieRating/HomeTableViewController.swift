@@ -20,12 +20,11 @@ class HomeTableViewController: UITableViewController {
         return view
     }()
     
-    var movies = [Movie]()
-    var query: String?
-    var data =  [(thumbnailImage: UIImage?, titleAndYear: String?)]()
-    var cells: [MovieTableViewCell] = []
+    private var query: String?
+    private var movies = [Movie]()
+    private var selectedItems = [String]()
+    private var cells: [MovieTableViewCell] = []
     private let toast = ToastMessage()
-    var selectedData: Any?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -108,23 +107,40 @@ class HomeTableViewController: UITableViewController {
         }
         task.resume()
     }
-    
-    func getDataCell(at indexPath: IndexPath) -> Any {
-        let cell = cells[indexPath.row]
+
+    func getDataCell(at indexPath: IndexPath) -> Any? {
+        print(#function)
+        guard let cell = movieTableView.cellForRow(at: indexPath) as? MovieTableViewCell else {
+            return nil
+        }
+            
         let thumbnailImage = cell.thumbnailImage.image
         let titleAndYearLabel = cell.titleAndYearLabel.text
         return (thumbnailImage, titleAndYearLabel)
     }
-    
+
     @objc private func storageButtonTapped(_ sender: UIButton) {
-        let selectedData = getDataCell(at: IndexPath(row: sender.tag, section: 0))
-        if let (thumbnailImage, titleAndYearLabel) = selectedData as? (UIImage?, String?) {
-            print("Selected thumbnailImage: \(String(describing: thumbnailImage))")
-            print("Selected titleAndYearLabel: \(String(describing: titleAndYearLabel))")
-        } else {
-            print("Error: Failed to get selected data")
+        print(#function)
+        guard let indexPath = movieTableView.indexPath(for: sender.superview?.superview as! UITableViewCell) else {
+            return
         }
-        movieTableView.deselectRow(at: IndexPath(row: sender.tag, section: 0), animated: true)
+
+        guard let selectedData = getDataCell(at: indexPath) as? (UIImage?, String?) else {
+            print("Error: Failed to get selected data")
+            return
+        }
+
+        print("Selected thumbnailImage: \(String(describing: selectedData.0))")
+        print("Selected titleAndYearLabel: \(String(describing: selectedData.1))")
+
+        // 저장된 데이터를 Tab Bar Controller에 전달
+        if let tabBarVC = self.tabBarController, let navController = tabBarVC.viewControllers?[1] as? UINavigationController, let storageVC = navController.topViewController as? StorageViewController {
+            storageVC.selectedData = selectedData
+        } else {
+            print("Error: Failed to get StorageViewController")
+        }
+
+        movieTableView.deselectRow(at: indexPath, animated: true)
     }
 }
 

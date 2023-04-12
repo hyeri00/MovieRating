@@ -24,12 +24,10 @@ class StorageViewController: UIViewController {
         return view
     }()
     
+    var movie: (String?, String?)?
     var movies: [Movie] = []
-    var data = [(thumbnailImage: UIImage?, titleAndYear: String?)]()
-    var savedData: [(thumbnailImage: UIImage, titleAndYear: String)] = []
-    var selectedThumbnailImage: UIImage?
-    var selectedTitle: String?
-    var tableViewController: HomeTableViewController?
+    var data: [(UIImage?, String?)] = []
+    var selectedData: (UIImage?, String?)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,17 +38,33 @@ class StorageViewController: UIViewController {
         setCollectionView()
         setConstraints()
         
-        tableViewController = navigationController?.viewControllers.first as? HomeTableViewController
+        if let data = selectedData {
+            print("collectionViewData: \(data)")
+        } else {
+            print("collectionViewData is nil")
+        }
+        if selectedData == nil {
+            print("Error: selectedData is nil")
+            return
+        }
+        if let selectedData = selectedData {
+            data.append(selectedData)
+            movieCollectionView.reloadData()
+        } else {
+            print("Error: selectedData is nil")
+        }
+
     }
     
-    func requestCellData(at indexPath: IndexPath) {
-        if let tableViewController = tableViewController {
-            let selectedData = tableViewController.getDataCell(at: IndexPath(row: indexPath.row, section: 0))
-            if let (thumbnailImage, titleAndYearLabel) = selectedData as? (UIImage?, String?) {
-                // 데이터 처리
-            } else {
-                print("Error: Failed to get selected data")
-            }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if let selectedData = selectedData {
+            // selectedData 값을 이용한 처리
+            print("Selected thumbnailImage: \(String(describing: selectedData.0))")
+            print("Selected titleAndYearLabel: \(String(describing: selectedData.1))")
+        } else {
+            print("Error: selectedData is nil")
         }
     }
     
@@ -86,7 +100,7 @@ class StorageViewController: UIViewController {
 }
 
 
-extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
+extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: 120, height: 180)
     }
@@ -97,16 +111,13 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
-        if let tableVC = tableViewController, let selectedData = tableVC.getDataCell(at: IndexPath(row: indexPath.row, section: 0)) {
-            cell.thumbnailImage.image = selectedData.thumbnailImage
-            cell.titleLabel.text = selectedData.titleAndYear
-        } else {
-            cell.thumbnailImage.image = nil
-            cell.titleLabel.text = ""
-        }
+        
+        cell.thumbnailImage.image = selectedData?.0
+        cell.titleLabel.text = selectedData?.1
+        
         return cell
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let deatilVC = MovieDetailViewController()
         deatilVC.modalPresentationStyle = .overFullScreen
