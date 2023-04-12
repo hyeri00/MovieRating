@@ -7,25 +7,20 @@
 
 import UIKit
 import SDWebImage
-import SafariServices
 
 class HomeTableViewController: UITableViewController {
-    
+
     private var movieTableView: UITableView = {
         let view = UITableView()
         view.backgroundColor = .white
         view.rowHeight = 120
-        view.register(MovieTableViewCell.self, forCellReuseIdentifier: "MovieTableViewCell")
+        view.register(MovieCell.self, forCellReuseIdentifier: "MovieCell")
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     var movies = [Movie]()
     var query: String?
-    var data =  [(thumbnailImage: UIImage?, titleAndYear: String?)]()
-    var cells: [MovieTableViewCell] = []
-    private let toast = ToastMessage()
-    var selectedData: Any?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,7 +66,7 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func searchMovies(query: String) {
-        
+
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "api.themoviedb.org"
@@ -81,15 +76,15 @@ class HomeTableViewController: UITableViewController {
             URLQueryItem(name: "query", value: query),
             URLQueryItem(name: "language", value: "ko-KR")
         ]
-        
+
         guard let url = urlComponents.url else {
-            print("유효하지 않는 URL")
-            return
-        }
-        
+              print("유효하지 않는 URL")
+              return
+          }
+
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
+            request.httpMethod = "GET"
+
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
                 print(error?.localizedDescription ?? "Unknown error")
@@ -108,24 +103,6 @@ class HomeTableViewController: UITableViewController {
         }
         task.resume()
     }
-    
-    func getDataCell(at indexPath: IndexPath) -> Any {
-        let cell = cells[indexPath.row]
-        let thumbnailImage = cell.thumbnailImage.image
-        let titleAndYearLabel = cell.titleAndYearLabel.text
-        return (thumbnailImage, titleAndYearLabel)
-    }
-    
-    @objc private func storageButtonTapped(_ sender: UIButton) {
-        let selectedData = getDataCell(at: IndexPath(row: sender.tag, section: 0))
-        if let (thumbnailImage, titleAndYearLabel) = selectedData as? (UIImage?, String?) {
-            print("Selected thumbnailImage: \(String(describing: thumbnailImage))")
-            print("Selected titleAndYearLabel: \(String(describing: titleAndYearLabel))")
-        } else {
-            print("Error: Failed to get selected data")
-        }
-        movieTableView.deselectRow(at: IndexPath(row: sender.tag, section: 0), animated: true)
-    }
 }
 
 
@@ -136,28 +113,18 @@ extension HomeTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieTableViewCell", for: indexPath) as! MovieTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
         let movie = movies[indexPath.row]
+        cell.titleAndYearLabel.text = "\(movie.title) (\(movie.releaseDate))"
         if let posterPath = movie.posterPath {
             let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
             cell.thumbnailImage.sd_setImage(with: posterURL, placeholderImage: UIImage(named: "placeholder"))
         }
-        cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
-        cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
-        cell.ratingLabel.text = "\(movie.voteAverage ?? 0.0)"
-        cells.append(cell)
-        cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
+
         return cell
     }
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let movie = movies[indexPath.row]
-        let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)")!
-        
-        let safariViewController = SFSafariViewController(url: movieURL)
-        present(safariViewController, animated: true, completion: nil)
-    }
 }
+
 
 extension HomeTableViewController: UISearchBarDelegate {
     
@@ -166,6 +133,7 @@ extension HomeTableViewController: UISearchBarDelegate {
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+            
         guard let searchTerm = searchBar.text, searchTerm.isEmpty == false else { return }
         
         DispatchQueue.main.async {
@@ -174,9 +142,26 @@ extension HomeTableViewController: UISearchBarDelegate {
         
         if let text = searchBar.text {
             query = text
-            
+
             searchMovies(query: query!)
             print("\(text)")
         }
+    }
+}
+
+
+struct Response: Codable {
+    let results: [Movie]
+}
+
+struct Movie: Codable {
+    let title: String
+    let releaseDate: String
+    let posterPath: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case title = "title"
+        case releaseDate = "release_date"
+        case posterPath = "poster_path"
     }
 }
