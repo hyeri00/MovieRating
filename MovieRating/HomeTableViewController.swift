@@ -22,9 +22,9 @@ class HomeTableViewController: UITableViewController {
     
     private var query: String?
     private var movies = [Movie]()
-    private var selectedItems = [String]()
     private var cells: [MovieTableViewCell] = []
     private let toast = ToastMessage()
+    var selectedData: [ (UIImage?, String?) ] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -108,15 +108,52 @@ class HomeTableViewController: UITableViewController {
         task.resume()
     }
 
+//    func getDataCell(at indexPath: IndexPath) -> Any? {
+//        print(#function)
+//        guard let cell = movieTableView.cellForRow(at: indexPath) as? MovieTableViewCell else {
+//            return nil
+//        }
+//
+//        let thumbnailImage = cell.thumbnailImage.image
+//        let titleAndYearLabel = cell.titleAndYearLabel.text
+//        return (thumbnailImage, titleAndYearLabel)
+//    }
+//
+//    @objc private func storageButtonTapped(_ sender: UIButton) {
+//        print(#function)
+//        guard let indexPath = movieTableView.indexPath(for: sender.superview?.superview as! UITableViewCell) else {
+//            return
+//        }
+//
+//        guard let selectedData = getDataCell(at: indexPath) as? (UIImage?, String?) else {
+//            print("Error: Failed to get selected data")
+//            return
+//        }
+//
+//        print("Selected thumbnailImage: \(String(describing: selectedData.0))")
+//        print("Selected titleAndYearLabel: \(String(describing: selectedData.1))")
+//
+//        // 저장된 데이터를 Tab Bar Controller에 전달
+//        if let tabBarVC = self.tabBarController, let navController = tabBarVC.viewControllers?[1] as? UINavigationController, let storageVC = navController.topViewController as? StorageViewController {
+//            storageVC.selectedData = selectedData
+//        } else {
+//            print("Error: Failed to get StorageViewController")
+//        }
+//
+//        movieTableView.deselectRow(at: indexPath, animated: true)
+//    }
     func getDataCell(at indexPath: IndexPath) -> Any? {
         print(#function)
         guard let cell = movieTableView.cellForRow(at: indexPath) as? MovieTableViewCell else {
             return nil
         }
-            
+
         let thumbnailImage = cell.thumbnailImage.image
         let titleAndYearLabel = cell.titleAndYearLabel.text
-        return (thumbnailImage, titleAndYearLabel)
+        let data = (thumbnailImage, titleAndYearLabel)
+        selectedData.append(data)
+
+        return [data] // 데이터 배열 형태로 반환
     }
 
     @objc private func storageButtonTapped(_ sender: UIButton) {
@@ -125,17 +162,16 @@ class HomeTableViewController: UITableViewController {
             return
         }
 
-        guard let selectedData = getDataCell(at: indexPath) as? (UIImage?, String?) else {
+        guard let selectedData = getDataCell(at: indexPath) as? [(UIImage?, String?)] else { // 선택한 데이터를 배열 형태로 가져옴
             print("Error: Failed to get selected data")
             return
         }
 
-        print("Selected thumbnailImage: \(String(describing: selectedData.0))")
-        print("Selected titleAndYearLabel: \(String(describing: selectedData.1))")
+        movieTableView.deselectRow(at: indexPath, animated: true)
 
-        // 저장된 데이터를 Tab Bar Controller에 전달
+        // 모든 선택한 데이터를 Tab Bar Controller에 전달
         if let tabBarVC = self.tabBarController, let navController = tabBarVC.viewControllers?[1] as? UINavigationController, let storageVC = navController.topViewController as? StorageViewController {
-            storageVC.selectedData = selectedData
+            storageVC.selectedData.append(contentsOf: selectedData) // 선택한 데이터 배열 전체를 추가
         } else {
             print("Error: Failed to get StorageViewController")
         }
@@ -167,6 +203,7 @@ extension HomeTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
         let movie = movies[indexPath.row]
         let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)")!
         

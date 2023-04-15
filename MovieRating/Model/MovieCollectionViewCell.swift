@@ -20,12 +20,13 @@ class MovieCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.textColor = .black
         label.font = .boldSystemFont(ofSize: 14)
+        label.numberOfLines = 0
         return label
     }()
     
     var evaluationLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .orange
+        label.textColor = .lightGray
         label.font = .systemFont(ofSize: 13)
         return label
     }()

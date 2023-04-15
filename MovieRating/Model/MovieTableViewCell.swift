@@ -87,7 +87,6 @@ class MovieTableViewCell: UITableViewCell {
         contentView.addSubview(storageButton)
     }
     
-
     private func setupAddTarget() {
         storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
     }

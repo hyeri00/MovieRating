@@ -27,45 +27,17 @@ class StorageViewController: UIViewController {
     var movie: (String?, String?)?
     var movies: [Movie] = []
     var data: [(UIImage?, String?)] = []
-    var selectedData: (UIImage?, String?)?
-    
+    var selectedData: [(UIImage?, String?)] = []
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setup()
         addViews()
+        getData()
         setNavigationBar()
         setCollectionView()
         setConstraints()
-        
-        if let data = selectedData {
-            print("collectionViewData: \(data)")
-        } else {
-            print("collectionViewData is nil")
-        }
-        if selectedData == nil {
-            print("Error: selectedData is nil")
-            return
-        }
-        if let selectedData = selectedData {
-            data.append(selectedData)
-            movieCollectionView.reloadData()
-        } else {
-            print("Error: selectedData is nil")
-        }
-
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        if let selectedData = selectedData {
-            // selectedData 값을 이용한 처리
-            print("Selected thumbnailImage: \(String(describing: selectedData.0))")
-            print("Selected titleAndYearLabel: \(String(describing: selectedData.1))")
-        } else {
-            print("Error: selectedData is nil")
-        }
     }
     
     private func setup() {
@@ -76,6 +48,24 @@ class StorageViewController: UIViewController {
         view.addSubview(movieCollectionView)
     }
     
+//    private func getData() {
+//          if let selectedData = selectedData.first {
+//              data = [selectedData]
+//              movieCollectionView.reloadData()
+//              print("전달 받은 thumbnailImage: \(String(describing: selectedData.0))")
+//              print("전달 받은 titleAndYearLabel: \(String(describing: selectedData.1))")
+//          } else {
+//              print("Error: selectedData is nil")
+//          }
+    //      }
+    
+    private func getData() {
+        data = selectedData
+        movieCollectionView.reloadData()
+        print("전달 받은 thumbnailImage: \(String(describing: selectedData.first?.0))")
+        print("전달 받은 titleAndYearLabel: \(String(describing: selectedData.first?.1))")
+    }
+
     private func setNavigationBar() {
         navigationController?.navigationBar.barTintColor = .white
         navigationController?.navigationBar.tintColor = .black
@@ -106,14 +96,21 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        print("들어온 data count: \(data.count)")
         return data.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
         
-        cell.thumbnailImage.image = selectedData?.0
-        cell.titleLabel.text = selectedData?.1
+        let movieData = data[indexPath.item]
+        print(movieData)
+        cell.thumbnailImage.image = movieData.0
+        cell.titleLabel.text = movieData.1
+        cell.evaluationLabel.text = "평가 안 함 ⭐️ 0.0"
+        
+        print("thumbnailImage: \(String(describing: movieData.0))")
+        print("titleLabel: \(String(describing: movieData.1))")
         
         return cell
     }
