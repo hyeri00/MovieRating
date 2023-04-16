@@ -24,9 +24,9 @@ class StorageViewController: UIViewController {
         return view
     }()
     
-    var movie: (String?, String?)?
-    var movies: [Movie] = []
-    var data: [(UIImage?, String?)] = []
+    private var movie: (String?, String?)?
+    private var movies: [Movie] = []
+    private var data: [(UIImage?, String?)] = []
     var selectedData: [(UIImage?, String?)] = []
 
     override func viewDidLoad() {
@@ -40,6 +40,13 @@ class StorageViewController: UIViewController {
         setConstraints()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        data = selectedData
+        movieCollectionView.reloadData()
+    }
+    
     private func setup() {
         view.backgroundColor = .white
     }
@@ -48,18 +55,8 @@ class StorageViewController: UIViewController {
         view.addSubview(movieCollectionView)
     }
     
-//    private func getData() {
-//          if let selectedData = selectedData.first {
-//              data = [selectedData]
-//              movieCollectionView.reloadData()
-//              print("전달 받은 thumbnailImage: \(String(describing: selectedData.0))")
-//              print("전달 받은 titleAndYearLabel: \(String(describing: selectedData.1))")
-//          } else {
-//              print("Error: selectedData is nil")
-//          }
-    //      }
-    
     private func getData() {
+        movies = []
         data = selectedData
         movieCollectionView.reloadData()
         print("전달 받은 thumbnailImage: \(String(describing: selectedData.first?.0))")

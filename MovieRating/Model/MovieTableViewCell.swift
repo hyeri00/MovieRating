@@ -64,13 +64,21 @@ class MovieTableViewCell: UITableViewCell {
     }()
     
     var movie: Movie?
+    var isStorageSelected: Bool = false
     private let toast = ToastMessage()
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        storageButton.isSelected = false
+        isStorageSelected = false
+        print("prepareForReuse called, button isSelected set to false")
+    }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         addViews()
-        setupAddTarget()
         setTableViewCell()
         setConstraints()
     }
@@ -85,10 +93,6 @@ class MovieTableViewCell: UITableViewCell {
         addSubview(genreLabel)
         addSubview(ratingStackView)
         contentView.addSubview(storageButton)
-    }
-    
-    private func setupAddTarget() {
-        storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
     }
     
     private func setTableViewCell() {
@@ -121,19 +125,5 @@ class MovieTableViewCell: UITableViewCell {
             storageButton.centerYAnchor.constraint(equalTo: centerYAnchor),
             storageButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -30)
         ])
-    }
-    
-    @objc private func storageButtonTapped(_ sender: UIButton) {
-        if storageButton.isSelected {
-            storageButton.isSelected = false
-            storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
-            storageButton.tintColor = .black
-        } else {
-            storageButton.isSelected = true
-            storageButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
-            storageButton.tintColor = .black
-            toast.showToast(image: (UIImage(systemName: "checkmark.circle.fill")!),
-                            message: "보관함에 저장 되었습니다.")
-        }
     }
 }

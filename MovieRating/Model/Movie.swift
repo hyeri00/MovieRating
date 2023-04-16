@@ -18,6 +18,7 @@ struct Movie: Codable, Equatable {
     let releaseDate: String
     let genreIds: [Int]
     let voteAverage: Double?
+    let isStorageButtonSelected = false
 
     var genres: [Genre] {
         return genreIds.compactMap { id in

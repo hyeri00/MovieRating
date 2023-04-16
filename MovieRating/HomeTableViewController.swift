@@ -24,7 +24,7 @@ class HomeTableViewController: UITableViewController {
     private var movies = [Movie]()
     private var cells: [MovieTableViewCell] = []
     private let toast = ToastMessage()
-    var selectedData: [ (UIImage?, String?) ] = []
+    private var selectedData: [ (UIImage?, String?) ] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -107,42 +107,8 @@ class HomeTableViewController: UITableViewController {
         }
         task.resume()
     }
-
-//    func getDataCell(at indexPath: IndexPath) -> Any? {
-//        print(#function)
-//        guard let cell = movieTableView.cellForRow(at: indexPath) as? MovieTableViewCell else {
-//            return nil
-//        }
-//
-//        let thumbnailImage = cell.thumbnailImage.image
-//        let titleAndYearLabel = cell.titleAndYearLabel.text
-//        return (thumbnailImage, titleAndYearLabel)
-//    }
-//
-//    @objc private func storageButtonTapped(_ sender: UIButton) {
-//        print(#function)
-//        guard let indexPath = movieTableView.indexPath(for: sender.superview?.superview as! UITableViewCell) else {
-//            return
-//        }
-//
-//        guard let selectedData = getDataCell(at: indexPath) as? (UIImage?, String?) else {
-//            print("Error: Failed to get selected data")
-//            return
-//        }
-//
-//        print("Selected thumbnailImage: \(String(describing: selectedData.0))")
-//        print("Selected titleAndYearLabel: \(String(describing: selectedData.1))")
-//
-//        // 저장된 데이터를 Tab Bar Controller에 전달
-//        if let tabBarVC = self.tabBarController, let navController = tabBarVC.viewControllers?[1] as? UINavigationController, let storageVC = navController.topViewController as? StorageViewController {
-//            storageVC.selectedData = selectedData
-//        } else {
-//            print("Error: Failed to get StorageViewController")
-//        }
-//
-//        movieTableView.deselectRow(at: indexPath, animated: true)
-//    }
-    func getDataCell(at indexPath: IndexPath) -> Any? {
+    
+    private func getDataCell(at indexPath: IndexPath) -> Any? {
         print(#function)
         guard let cell = movieTableView.cellForRow(at: indexPath) as? MovieTableViewCell else {
             return nil
@@ -158,25 +124,37 @@ class HomeTableViewController: UITableViewController {
 
     @objc private func storageButtonTapped(_ sender: UIButton) {
         print(#function)
-        guard let indexPath = movieTableView.indexPath(for: sender.superview?.superview as! UITableViewCell) else {
-            return
-        }
-
-        guard let selectedData = getDataCell(at: indexPath) as? [(UIImage?, String?)] else { // 선택한 데이터를 배열 형태로 가져옴
-            print("Error: Failed to get selected data")
-            return
-        }
-
-        movieTableView.deselectRow(at: indexPath, animated: true)
-
-        // 모든 선택한 데이터를 Tab Bar Controller에 전달
-        if let tabBarVC = self.tabBarController, let navController = tabBarVC.viewControllers?[1] as? UINavigationController, let storageVC = navController.topViewController as? StorageViewController {
-            storageVC.selectedData.append(contentsOf: selectedData) // 선택한 데이터 배열 전체를 추가
+        if sender.isSelected == true {
+            sender.isSelected = false
+            sender.setImage(UIImage(systemName: "bookmark"), for: .normal)
+            sender.tintColor = .black
         } else {
-            print("Error: Failed to get StorageViewController")
-        }
+            sender.isSelected = true
+            sender.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
+            sender.tintColor = .black
+            toast.showToast(image: (UIImage(systemName: "checkmark.circle.fill")!),
+                            message: "보관함에 저장 되었습니다.")
 
-        movieTableView.deselectRow(at: indexPath, animated: true)
+            guard let indexPath = movieTableView.indexPath(for: sender.superview?.superview as! UITableViewCell) else {
+                return
+            }
+
+            guard let selectedData = getDataCell(at: indexPath) as? [(UIImage?, String?)] else { // 선택한 데이터를 배열 형태로 가져옴
+                print("Error: Failed to get selected data")
+                return
+            }
+
+            movieTableView.deselectRow(at: indexPath, animated: true)
+
+            // 모든 선택한 데이터를 Tab Bar Controller에 전달
+            if let tabBarVC = self.tabBarController, let navController = tabBarVC.viewControllers?[1] as? UINavigationController, let storageVC = navController.topViewController as? StorageViewController {
+                storageVC.selectedData.append(contentsOf: selectedData) // 선택한 데이터 배열 전체를 추가
+            } else {
+                print("Error: Failed to get StorageViewController")
+            }
+
+            movieTableView.deselectRow(at: indexPath, animated: true)
+        }
     }
 }
 
