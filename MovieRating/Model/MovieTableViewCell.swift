@@ -62,19 +62,7 @@ class MovieTableViewCell: UITableViewCell {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
-    var movie: Movie?
-    var isStorageSelected: Bool = false
-    private let toast = ToastMessage()
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
         
-        storageButton.isSelected = false
-        isStorageSelected = false
-        print("prepareForReuse called, button isSelected set to false")
-    }
-    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         

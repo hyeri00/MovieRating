@@ -124,7 +124,7 @@ class HomeTableViewController: UITableViewController {
 
     @objc private func storageButtonTapped(_ sender: UIButton) {
         print(#function)
-        if sender.isSelected == true {
+        if sender.isSelected {
             sender.isSelected = false
             sender.setImage(UIImage(systemName: "bookmark"), for: .normal)
             sender.tintColor = .black
@@ -177,6 +177,9 @@ extension HomeTableViewController {
         cell.ratingLabel.text = "\(movie.voteAverage ?? 0.0)"
         cells.append(cell)
         cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
+        print("Before: isSelected is \(cell.storageButton.isSelected)")
+        cell.storageButton.isSelected = true
+        print("After: isSelected is \(cell.storageButton.isSelected)")
         return cell
     }
     
