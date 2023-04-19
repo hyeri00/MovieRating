@@ -24,10 +24,9 @@ class StorageViewController: UIViewController {
         return view
     }()
     
-    private var movie: (String?, String?)?
     private var movies: [Movie] = []
-    private var data: [(UIImage?, String?)] = []
-    var selectedData: [(UIImage?, String?)] = []
+    private var data: [(UIImage?, String?, String?, String?)] = []
+    var selectedData: [(UIImage?, String?, String?, String?)] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,13 +37,6 @@ class StorageViewController: UIViewController {
         setNavigationBar()
         setCollectionView()
         setConstraints()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        data = selectedData
-        movieCollectionView.reloadData()
     }
     
     private func setup() {
@@ -59,8 +51,10 @@ class StorageViewController: UIViewController {
         movies = []
         data = selectedData
         movieCollectionView.reloadData()
-        print("전달 받은 thumbnailImage: \(String(describing: selectedData.first?.0))")
-        print("전달 받은 titleAndYearLabel: \(String(describing: selectedData.first?.1))")
+        print("Storage에 전달 받은 thumbnailImage: \(String(describing: selectedData.first?.0))")
+        print("Storage에 전달 받은 titleAndYearLabel: \(String(describing: selectedData.first?.1))")
+        print("Storage에 전달 받은 castLabel: \(String(describing: selectedData.first?.2))")
+        print("Storage에 전달 받은 ratingLabel: \(String(describing: selectedData.first?.3))")
     }
 
     private func setNavigationBar() {
@@ -115,6 +109,7 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let deatilVC = MovieDetailViewController()
         deatilVC.modalPresentationStyle = .overFullScreen
+        deatilVC.selectedMovie = selectedData[indexPath.item]
         self.present(deatilVC, animated: false, completion: nil)
     }
 }

@@ -41,6 +41,8 @@ class MovieCollectionViewCell: UICollectionViewCell {
         return view
     }()
     
+    var movie: Movie?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         

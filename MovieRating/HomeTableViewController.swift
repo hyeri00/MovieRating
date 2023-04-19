@@ -24,7 +24,7 @@ class HomeTableViewController: UITableViewController {
     private var movies = [Movie]()
     private var cells: [MovieTableViewCell] = []
     private let toast = ToastMessage()
-    private var selectedData: [ (UIImage?, String?) ] = []
+    private var selectedData: [ (UIImage?, String?, String?, String?) ] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -116,10 +116,12 @@ class HomeTableViewController: UITableViewController {
 
         let thumbnailImage = cell.thumbnailImage.image
         let titleAndYearLabel = cell.titleAndYearLabel.text
-        let data = (thumbnailImage, titleAndYearLabel)
+        let genreLabel = cell.genreLabel.text
+        let ratingLabel = cell.ratingLabel.text
+        let data = (thumbnailImage, titleAndYearLabel, genreLabel, ratingLabel)
         selectedData.append(data)
 
-        return [data] // 데이터 배열 형태로 반환
+        return [data]
     }
 
     @objc private func storageButtonTapped(_ sender: UIButton) {
@@ -132,23 +134,22 @@ class HomeTableViewController: UITableViewController {
             sender.isSelected = true
             sender.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
             sender.tintColor = .black
-            toast.showToast(image: (UIImage(systemName: "checkmark.circle.fill")!),
-                            message: "보관함에 저장 되었습니다.")
+            toast.showToast(image: UIImage(named: "check-circle")!,
+                            message: "  보관함에 저장 되었습니다.")
 
             guard let indexPath = movieTableView.indexPath(for: sender.superview?.superview as! UITableViewCell) else {
                 return
             }
 
-            guard let selectedData = getDataCell(at: indexPath) as? [(UIImage?, String?)] else { // 선택한 데이터를 배열 형태로 가져옴
+            // 선택한 데이터를 배열 형태로 가져옴
+            guard let selectedData = getDataCell(at: indexPath) as? [(UIImage?, String?, String?, String?)] else {
                 print("Error: Failed to get selected data")
                 return
             }
 
-            movieTableView.deselectRow(at: indexPath, animated: true)
-
             // 모든 선택한 데이터를 Tab Bar Controller에 전달
             if let tabBarVC = self.tabBarController, let navController = tabBarVC.viewControllers?[1] as? UINavigationController, let storageVC = navController.topViewController as? StorageViewController {
-                storageVC.selectedData.append(contentsOf: selectedData) // 선택한 데이터 배열 전체를 추가
+                storageVC.selectedData.append(contentsOf: selectedData)
             } else {
                 print("Error: Failed to get StorageViewController")
             }
@@ -177,9 +178,6 @@ extension HomeTableViewController {
         cell.ratingLabel.text = "\(movie.voteAverage ?? 0.0)"
         cells.append(cell)
         cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
-        print("Before: isSelected is \(cell.storageButton.isSelected)")
-        cell.storageButton.isSelected = true
-        print("After: isSelected is \(cell.storageButton.isSelected)")
         return cell
     }
     

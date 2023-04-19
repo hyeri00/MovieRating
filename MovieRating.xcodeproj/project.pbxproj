@@ -12,6 +12,8 @@
 		1C709BCA29DD64A800E23571 /* MovieCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C709BC929DD64A800E23571 /* MovieCollectionViewCell.swift */; };
 		1C753DF329E578000074C83D /* MovieDeatilViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C753DF229E578000074C83D /* MovieDeatilViewController.swift */; };
 		1C753DF529E578140074C83D /* MovieTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C753DF429E578140074C83D /* MovieTableViewCell.swift */; };
+		1C753DF829EFEF4E0074C83D /* RateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C753DF729EFEF4E0074C83D /* RateView.swift */; };
+		1C753DFC29EFF0E20074C83D /* RatingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C753DFB29EFF0E20074C83D /* RatingView.swift */; };
 		1CE1DB9C29DA974400645F68 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CE1DB9B29DA974400645F68 /* AppDelegate.swift */; };
 		1CE1DB9E29DA974400645F68 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CE1DB9D29DA974400645F68 /* SceneDelegate.swift */; };
 		1CE1DBA029DA974400645F68 /* HomeTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CE1DB9F29DA974400645F68 /* HomeTableViewController.swift */; };
@@ -28,6 +30,8 @@
 		1C709BC929DD64A800E23571 /* MovieCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieCollectionViewCell.swift; sourceTree = "<group>"; };
 		1C753DF229E578000074C83D /* MovieDeatilViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDeatilViewController.swift; sourceTree = "<group>"; };
 		1C753DF429E578140074C83D /* MovieTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieTableViewCell.swift; sourceTree = "<group>"; };
+		1C753DF729EFEF4E0074C83D /* RateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateView.swift; sourceTree = "<group>"; };
+		1C753DFB29EFF0E20074C83D /* RatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingView.swift; sourceTree = "<group>"; };
 		1CE1DB9829DA974400645F68 /* MovieRating.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MovieRating.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CE1DB9B29DA974400645F68 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1CE1DB9D29DA974400645F68 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -62,6 +66,15 @@
 			path = Module;
 			sourceTree = "<group>";
 		};
+		1C753DF629EFEF380074C83D /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				1C753DF729EFEF4E0074C83D /* RateView.swift */,
+				1C753DFB29EFF0E20074C83D /* RatingView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		1CE1DB8F29DA974400645F68 = {
 			isa = PBXGroup;
 			children = (
@@ -87,6 +100,7 @@
 				1CE1DBAF29DA9CE800645F68 /* StorageViewController.swift */,
 				1C753DF229E578000074C83D /* MovieDeatilViewController.swift */,
 				1CE1DBB129DAA22400645F68 /* Model */,
+				1C753DF629EFEF380074C83D /* Components */,
 				1CE1DBD229DBF6ED00645F68 /* Resource */,
 				1C709BC629DD5BA700E23571 /* Module */,
 				1CE1DBA929DA974500645F68 /* Info.plist */,
@@ -248,12 +262,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C753DFC29EFF0E20074C83D /* RatingView.swift in Sources */,
 				1C753DF529E578140074C83D /* MovieTableViewCell.swift in Sources */,
 				1C753DF329E578000074C83D /* MovieDeatilViewController.swift in Sources */,
 				1CE1DBA029DA974400645F68 /* HomeTableViewController.swift in Sources */,
 				1CE1DB9C29DA974400645F68 /* AppDelegate.swift in Sources */,
 				1C6D197E29DD472C00774C4C /* Movie.swift in Sources */,
 				1C709BC829DD5BCD00E23571 /* ToastMessage.swift in Sources */,
+				1C753DF829EFEF4E0074C83D /* RateView.swift in Sources */,
 				1CE1DBB029DA9CE800645F68 /* StorageViewController.swift in Sources */,
 				1CE1DB9E29DA974400645F68 /* SceneDelegate.swift in Sources */,
 				1C709BCA29DD64A800E23571 /* MovieCollectionViewCell.swift in Sources */,

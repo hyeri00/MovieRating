@@ -18,7 +18,6 @@ struct Movie: Codable, Equatable {
     let releaseDate: String
     let genreIds: [Int]
     let voteAverage: Double?
-    let isStorageButtonSelected = false
 
     var genres: [Genre] {
         return genreIds.compactMap { id in
@@ -53,7 +52,6 @@ struct Movie: Codable, Equatable {
         case voteAverage = "vote_average"
     }
 }
-
 
 struct Genre: Codable {
     let id: Int
