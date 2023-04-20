@@ -10,7 +10,7 @@ import UIKit
 class RateView: RatingView {
 
     var starNumber: Int = 5 { didSet { bind() } }
-    var currentStar: Int = 0
+    open var currentStar: Int = 0
     private var buttons: [UIButton] = []
 
     lazy var stackView: UIStackView = {
@@ -26,11 +26,12 @@ class RateView: RatingView {
         super.configure()
 
         starNumber = 5
-        addSubviews()
+        
+        addViews()
         setConstraints()
     }
 
-    private func addSubviews() {
+    private func addViews() {
         addSubview(stackView)
     }
 
@@ -66,5 +67,6 @@ class RateView: RatingView {
             buttons[i].setImage(UIImage(systemName: "star"), for: .normal)
         }
         currentStar = end + 1
+        sendActions(for: .valueChanged)
     }
 }

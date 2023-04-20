@@ -26,8 +26,10 @@ class MovieCollectionViewCell: UICollectionViewCell {
     
     var evaluationLabel: UILabel = {
         let label = UILabel()
+        label.text = "평가 안 함 ⭐️ 0.0"
         label.textColor = .lightGray
         label.font = .systemFont(ofSize: 13)
+        label.isUserInteractionEnabled = true
         return label
     }()
     
@@ -41,12 +43,11 @@ class MovieCollectionViewCell: UICollectionViewCell {
         return view
     }()
     
-    var movie: Movie?
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
         addViews()
+        getData()
         setConstraints()
     }
     
@@ -57,6 +58,10 @@ class MovieCollectionViewCell: UICollectionViewCell {
     private func addViews() {
         contentView.addSubview(thumbnailImage)
         contentView.addSubview(stackView)
+    }
+    
+    private func getData() {
+        NotificationCenter.default.addObserver(self, selector: #selector(updateEvaluationLabel(_:)), name: NSNotification.Name("didChangeRate"), object: nil)
     }
     
     private func setConstraints() {
@@ -70,5 +75,13 @@ class MovieCollectionViewCell: UICollectionViewCell {
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
+    }
+    
+    @objc func updateEvaluationLabel(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+                let rate = userInfo["rate"] as? CGFloat else { return }
+        evaluationLabel.text = "평가 함 ⭐️\(rate)"
+        evaluationLabel.textColor = .black
+        evaluationLabel.font = .boldSystemFont(ofSize: 13)
     }
 }

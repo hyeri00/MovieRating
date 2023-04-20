@@ -103,12 +103,13 @@ class MovieDetailViewController: UIViewController {
         button.setImage(UIImage(systemName: "trash")?.withTintColor(.black, renderingMode: .alwaysOriginal), for: .normal)
         button.setTitle("  보관함에서 삭제하기", for: .normal)
         button.setTitleColor(.black, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .light)
+        button.titleLabel?.font = .systemFont(ofSize: 14)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     private var movies = [Movie]()
+    var collectionView: UICollectionView!
     private var defaultHeight: CGFloat = 300
     var selectedMovie: (UIImage?, String?, String?, String?)?
     private var detailViewTopConstraint: NSLayoutConstraint!
@@ -154,6 +155,7 @@ class MovieDetailViewController: UIViewController {
     
     private func setupAddTarget() {
         movieDetailSiteButton.addTarget(self, action: #selector(goMovieDeatilSite), for: .touchUpInside)
+        rateView.addTarget(self, action: #selector(didChangeRate), for: .valueChanged)
     }
     
     private func setSeparatorView() {
@@ -184,6 +186,11 @@ class MovieDetailViewController: UIViewController {
             backgroundView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             backgroundView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            detailView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            detailView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            detailView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            detailView.heightAnchor.constraint(equalToConstant: 350),
             
             thumbnailImage.topAnchor.constraint(equalTo: detailView.topAnchor, constant: 10),
             thumbnailImage.leadingAnchor.constraint(equalTo: detailView.leadingAnchor, constant: 10),
@@ -217,12 +224,6 @@ class MovieDetailViewController: UIViewController {
             removeMovieCellButton.leadingAnchor.constraint(equalTo: detailView.leadingAnchor, constant: 15),
             removeMovieCellButton.bottomAnchor.constraint(equalTo: detailView.bottomAnchor, constant: -50)
         ])
-        NSLayoutConstraint.activate([
-            detailView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            detailView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            detailView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            detailView.heightAnchor.constraint(equalToConstant: 350)
-        ])
     }
     
     private func showDetailView() {
@@ -238,6 +239,15 @@ class MovieDetailViewController: UIViewController {
     }
     
     @objc private func goMovieDeatilSite() {
+    }
+    
+    @objc func didChangeRate() {
+        print(#function)
+        
+        let rate = CGFloat(rateView.currentStar)
+        print("Rating changed to: \(rate)")
+        let userInfo = ["rate": rate]
+        NotificationCenter.default.post(name: NSNotification.Name("didChangeRate"), object: nil, userInfo: userInfo)
     }
     
     @objc private func backgroundViewTapped(_ tapRecognizer: UITapGestureRecognizer) {

@@ -8,6 +8,7 @@
 import UIKit
 import SDWebImage
 
+
 class StorageViewController: UIViewController {
     
     let movieCollectionView: UICollectionView = {
@@ -93,13 +94,9 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
-        
         let movieData = data[indexPath.item]
-        print(movieData)
         cell.thumbnailImage.image = movieData.0
         cell.titleLabel.text = movieData.1
-        cell.evaluationLabel.text = "평가 안 함 ⭐️ 0.0"
-        
         print("thumbnailImage: \(String(describing: movieData.0))")
         print("titleLabel: \(String(describing: movieData.1))")
         
