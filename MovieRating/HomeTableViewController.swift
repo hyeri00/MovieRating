@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import SDWebImage
+import Kingfisher
 import SafariServices
 
 class HomeTableViewController: UITableViewController {
@@ -20,10 +20,30 @@ class HomeTableViewController: UITableViewController {
         return view
     }()
     
+    private var emptyStateLabel: UILabel = {
+       let label = UILabel()
+        label.text = "검색 결과가 없습니다."
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 14)
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+//    private var currentPage = 1
+    private var currentPage = 1 {
+        didSet {
+            if currentPage < 1 {
+                currentPage = 1
+            }
+        }
+    }
+    private var totalPage = 1
     private var query: String?
     private var movies = [Movie]()
     private var cells: [MovieTableViewCell] = []
     private let toast = ToastMessage()
+    private let storageButton = MovieTableViewCell().storageButton
     private var selectedData: [ (UIImage?, String?, String?, String?) ] = []
     
     override func viewDidLoad() {
@@ -42,6 +62,7 @@ class HomeTableViewController: UITableViewController {
     
     private func addViews() {
         view.addSubview(movieTableView)
+        movieTableView.addSubview(emptyStateLabel)
     }
     
     private func setTableView() {
@@ -62,10 +83,13 @@ class HomeTableViewController: UITableViewController {
     
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            movieTableView.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
+            movieTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             movieTableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             movieTableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            movieTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            movieTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
+            emptyStateLabel.centerXAnchor.constraint(equalTo: movieTableView.centerXAnchor),
+            emptyStateLabel.centerYAnchor.constraint(equalTo: movieTableView.centerYAnchor)
         ])
     }
     
@@ -78,7 +102,8 @@ class HomeTableViewController: UITableViewController {
         urlComponents.queryItems = [
             URLQueryItem(name: "api_key", value: "73861d304f91be437d4465b52141a39b"),
             URLQueryItem(name: "query", value: query),
-            URLQueryItem(name: "language", value: "ko-KR")
+            URLQueryItem(name: "language", value: "ko-KR"),
+            URLQueryItem(name: "total_page", value: "\(max(currentPage, 1))")
         ]
         
         guard let url = urlComponents.url else {
@@ -91,22 +116,72 @@ class HomeTableViewController: UITableViewController {
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
-                print(error?.localizedDescription ?? "Unknown error")
+                print("task error", error?.localizedDescription ?? "Unknown error")
                 return
             }
             do {
                 let decoder = JSONDecoder()
                 let response = try decoder.decode(Response.self, from: data)
                 self.movies = response.results
+                self.totalPage = response.totalPages
                 DispatchQueue.main.async {
+                    if self.movies.isEmpty {
+                        self.emptyStateLabel.isHidden = false
+                    } else {
+                        self.emptyStateLabel.isHidden = true
+                    }
                     self.movieTableView.reloadData()
                 }
             } catch {
-                print(error.localizedDescription)
+                print("error", error.localizedDescription)
             }
         }
         task.resume()
     }
+//    private func searchMovies(query: String) {
+//
+//        var urlComponents = URLComponents()
+//        urlComponents.scheme = "https"
+//        urlComponents.host = "api.themoviedb.org"
+//        urlComponents.path = "/3/search/movie"
+//        urlComponents.queryItems = [
+//            URLQueryItem(name: "api_key", value: "73861d304f91be437d4465b52141a39b"),
+//            URLQueryItem(name: "query", value: query),
+//            URLQueryItem(name: "language", value: "ko-KR"),
+//            URLQueryItem(name: "page", value: "1")
+//        ]
+//
+//        guard let url = urlComponents.url else {
+//            print("유효하지 않는 URL")
+//            return
+//        }
+//
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "GET"
+//
+//        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+//            guard let data = data, error == nil else {
+//                print(error?.localizedDescription ?? "Unknown error")
+//                return
+//            }
+//            do {
+//                let decoder = JSONDecoder()
+//                let response = try decoder.decode(Response.self, from: data)
+//                self.movies = response.results
+//                DispatchQueue.main.async {
+//                    if self.movies.isEmpty {
+//                        self.emptyStateLabel.isHidden = false
+//                    } else {
+//                        self.emptyStateLabel.isHidden = true
+//                    }
+//                    self.movieTableView.reloadData()
+//                }
+//            } catch {
+//                print(error.localizedDescription)
+//            }
+//        }
+//        task.resume()
+//    }
     
     private func getDataCell(at indexPath: IndexPath) -> Any? {
         print(#function)
@@ -171,12 +246,12 @@ extension HomeTableViewController {
         let movie = movies[indexPath.row]
         if let posterPath = movie.posterPath {
             let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
-            cell.thumbnailImage.sd_setImage(with: posterURL, placeholderImage: UIImage(named: "placeholder"))
+            cell.thumbnailImage.kf.setImage(with: posterURL,
+                                            placeholder: UIImage(systemName: "photo")?.withTintColor(.black))
         }
         cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
         cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
-        cell.ratingLabel.text = "\(movie.voteAverage ?? 0.0)"
-        cells.append(cell)
+        cell.ratingLabel.text = String(format: "%.1f", movie.voteAverage ?? 0.0)
         cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
         return cell
     }
@@ -210,5 +285,15 @@ extension HomeTableViewController: UISearchBarDelegate {
             searchMovies(query: query!)
             print("\(text)")
         }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        searchMovies(query: "")
+        
+        emptyStateLabel.isHidden = true
+        emptyStateLabel.removeFromSuperview()
+        
+        self.movieTableView.reloadData()
     }
 }

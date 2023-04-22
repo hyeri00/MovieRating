@@ -43,6 +43,8 @@ class MovieCollectionViewCell: UICollectionViewCell {
         return view
     }()
     
+    var selectedCellIndex: Int?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -61,7 +63,10 @@ class MovieCollectionViewCell: UICollectionViewCell {
     }
     
     private func getData() {
-        NotificationCenter.default.addObserver(self, selector: #selector(updateEvaluationLabel(_:)), name: NSNotification.Name("didChangeRate"), object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateEvaluationLabel(_:)),
+                                               name: NSNotification.Name("didChangeRate"),
+                                               object: nil)
     }
     
     private func setConstraints() {
@@ -83,5 +88,7 @@ class MovieCollectionViewCell: UICollectionViewCell {
         evaluationLabel.text = "평가 함 ⭐️\(rate)"
         evaluationLabel.textColor = .black
         evaluationLabel.font = .boldSystemFont(ofSize: 13)
+
+        print("Rate to: \(rate)")
     }
 }

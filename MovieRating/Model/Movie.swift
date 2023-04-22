@@ -9,6 +9,16 @@ import UIKit
 
 struct Response: Codable {
     let results: [Movie]
+    let page: Int
+    let totalResults: Int
+    let totalPages: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case page = "page"
+        case results = "results"
+        case totalResults = "total_results"
+        case totalPages = "total_pages"
+    }
 }
 
 struct Movie: Codable, Equatable {
@@ -32,6 +42,10 @@ struct Movie: Codable, Equatable {
 
         dateFormatter.dateFormat = "yyyy"
         return dateFormatter.string(from: date)
+    }
+    
+    var voteAverageString: String {
+        return String(format: "%.1f", voteAverage ?? 0)
     }
 
     static func == (lhs: Movie, rhs: Movie) -> Bool {

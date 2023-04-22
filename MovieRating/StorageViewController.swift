@@ -6,8 +6,6 @@
 //
 
 import UIKit
-import SDWebImage
-
 
 class StorageViewController: UIViewController {
     

@@ -243,7 +243,7 @@ class MovieDetailViewController: UIViewController {
     
     @objc func didChangeRate() {
         print(#function)
-        
+
         let rate = CGFloat(rateView.currentStar)
         print("Rating changed to: \(rate)")
         let userInfo = ["rate": rate]
@@ -264,3 +264,36 @@ class MovieDetailViewController: UIViewController {
         }
     }
 }
+
+//@objc func didChangeRate() {
+//    print(#function)
+//
+//    let rate = CGFloat(rateView.currentStar)
+//    print("Rating changed to: \(rate)")
+//    let userInfo = ["rate": rate]
+//    NotificationCenter.default.post(name: NSNotification.Name("didChangeRate"), object: nil, userInfo: userInfo)
+//}
+//
+//이게 MovieDetailViewController의 코드이며 이 rate의 값을
+//
+//private func getData() {
+//    NotificationCenter.default.addObserver(self,
+//                                           selector: #selector(updateEvaluationLabel(_:)),
+//                                           name: NSNotification.Name("didChangeRate"),
+//                                           object: nil)
+//}
+//
+//@objc func updateEvaluationLabel(_ notification: Notification) {
+//    guard let userInfo = notification.userInfo,
+//          let rate = userInfo["rate"] as? CGFloat else { return }
+//
+//    if let collectionView = self.superview as? UICollectionView,
+//       let indexPath = collectionView.indexPath(for: self),
+//       indexPath.item == selectedCellIndex {
+//        evaluationLabel.text = "평가 함 ⭐️\(rate)"
+//        evaluationLabel.textColor = .black
+//        evaluationLabel.font = .boldSystemFont(ofSize: 13)
+//    }
+//}
+//
+//collectionViewCell에 받아서 evaluationLabel의 text를 바꾸고 있는데 모든 셀이 아닌 선택한 셀의 evaluationLabel의 text만 바뀌게 하기

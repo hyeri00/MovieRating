@@ -7,7 +7,7 @@ target 'MovieRating' do
 
   # Pods for MovieRating
   pod 'Alamofire', '~> 5.1'
-  pod 'SDWebImage'
+  pod 'Kingfisher'
   pod 'SnapKit'
   pod 'AlamofireImage'
 end
