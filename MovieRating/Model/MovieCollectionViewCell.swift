@@ -43,6 +43,7 @@ class MovieCollectionViewCell: UICollectionViewCell {
         return view
     }()
     
+    var currentRating: CGFloat = 0
     var selectedCellIndex: Int?
     
     override init(frame: CGRect) {
@@ -90,5 +91,23 @@ class MovieCollectionViewCell: UICollectionViewCell {
         evaluationLabel.font = .boldSystemFont(ofSize: 13)
 
         print("Rate to: \(rate)")
+        currentRating = rate
     }
+    
+//    @objc func updateEvaluationLabel(_ notification: Notification) {
+//        print(#function)
+//        guard let userInfo = notification.userInfo,
+//              let rate = userInfo["rate"] as? CGFloat else { return }
+//
+//        if let collectionView = self.superview as? UICollectionView,
+//           !collectionView.indexPathsForVisibleItems.isEmpty,
+//           let indexPath = collectionView.indexPathsForVisibleItems.first(where: { $0.item == selectedCellIndex }),
+//           let cell = collectionView.cellForItem(at: indexPath) as? MovieCollectionViewCell {
+//            cell.evaluationLabel.text = "평가 함 ⭐️\(rate)"
+//            cell.evaluationLabel.textColor = .black
+//            cell.evaluationLabel.font = .boldSystemFont(ofSize: 13)
+//            print("evaluation label updated at index: \(indexPath.item)")
+//        }
+//        print("Rate to: \(rate)")
+//    }
 }

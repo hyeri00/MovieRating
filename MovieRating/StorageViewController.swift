@@ -38,6 +38,13 @@ class StorageViewController: UIViewController {
         setConstraints()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        getData()
+        movieCollectionView.reloadData()
+    }
+    
     private func setup() {
         view.backgroundColor = .white
     }

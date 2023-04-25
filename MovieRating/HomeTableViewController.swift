@@ -11,6 +11,14 @@ import SafariServices
 
 class HomeTableViewController: UITableViewController {
     
+    private var totalCountLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 14)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private var movieTableView: UITableView = {
         let view = UITableView()
         view.backgroundColor = .white
@@ -30,20 +38,10 @@ class HomeTableViewController: UITableViewController {
         return label
     }()
     
-//    private var currentPage = 1
-    private var currentPage = 1 {
-        didSet {
-            if currentPage < 1 {
-                currentPage = 1
-            }
-        }
-    }
-    private var totalPage = 1
     private var query: String?
     private var movies = [Movie]()
-    private var cells: [MovieTableViewCell] = []
+    private var searchTask: DispatchWorkItem?
     private let toast = ToastMessage()
-    private let storageButton = MovieTableViewCell().storageButton
     private var selectedData: [ (UIImage?, String?, String?, String?) ] = []
     
     override func viewDidLoad() {
@@ -61,6 +59,7 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func addViews() {
+        view.addSubview(totalCountLabel)
         view.addSubview(movieTableView)
         movieTableView.addSubview(emptyStateLabel)
     }
@@ -83,7 +82,10 @@ class HomeTableViewController: UITableViewController {
     
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            movieTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            totalCountLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
+            totalCountLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            
+            movieTableView.topAnchor.constraint(equalTo: totalCountLabel.bottomAnchor, constant: 5),
             movieTableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             movieTableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             movieTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -94,7 +96,6 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func searchMovies(query: String) {
-        
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "api.themoviedb.org"
@@ -102,86 +103,56 @@ class HomeTableViewController: UITableViewController {
         urlComponents.queryItems = [
             URLQueryItem(name: "api_key", value: "73861d304f91be437d4465b52141a39b"),
             URLQueryItem(name: "query", value: query),
-            URLQueryItem(name: "language", value: "ko-KR"),
-            URLQueryItem(name: "total_page", value: "\(max(currentPage, 1))")
+            URLQueryItem(name: "language", value: "ko-KR")
         ]
-        
-        guard let url = urlComponents.url else {
-            print("유효하지 않는 URL")
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, error == nil else {
-                print("task error", error?.localizedDescription ?? "Unknown error")
+
+        let currentPage = 1 // 시작 페이지
+        var allMovies = [Movie]() // 모든 영화를 저장할 배열
+
+        func fetchMovies(page: Int) {
+            var urlComponents = urlComponents
+            urlComponents.queryItems?.append(URLQueryItem(name: "page", value: "\(page)"))
+            guard let url = urlComponents.url else {
+                print("유효하지 않는 URL")
                 return
             }
-            do {
-                let decoder = JSONDecoder()
-                let response = try decoder.decode(Response.self, from: data)
-                self.movies = response.results
-                self.totalPage = response.totalPages
-                DispatchQueue.main.async {
-                    if self.movies.isEmpty {
-                        self.emptyStateLabel.isHidden = false
-                    } else {
-                        self.emptyStateLabel.isHidden = true
-                    }
-                    self.movieTableView.reloadData()
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                guard let data = data, error == nil else {
+                    print(error?.localizedDescription ?? "Unknown error")
+                    return
                 }
-            } catch {
-                print("error", error.localizedDescription)
+                do {
+                    let decoder = JSONDecoder()
+                    let response = try decoder.decode(Response.self, from: data)
+                    allMovies += response.results
+
+                    if page < response.totalPages {
+                        fetchMovies(page: page+1)
+                    } else {
+                        self.movies = allMovies
+                        DispatchQueue.main.async {
+                            if self.movies.isEmpty {
+                                self.emptyStateLabel.isHidden = false
+                            } else {
+                                self.emptyStateLabel.isHidden = true
+                            }
+                            self.movieTableView.reloadData()
+                        }
+                    }
+                } catch {
+                    print(error.localizedDescription)
+                }
             }
+            task.resume()
         }
-        task.resume()
+        fetchMovies(page: currentPage)
     }
-//    private func searchMovies(query: String) {
-//
-//        var urlComponents = URLComponents()
-//        urlComponents.scheme = "https"
-//        urlComponents.host = "api.themoviedb.org"
-//        urlComponents.path = "/3/search/movie"
-//        urlComponents.queryItems = [
-//            URLQueryItem(name: "api_key", value: "73861d304f91be437d4465b52141a39b"),
-//            URLQueryItem(name: "query", value: query),
-//            URLQueryItem(name: "language", value: "ko-KR"),
-//            URLQueryItem(name: "page", value: "1")
-//        ]
-//
-//        guard let url = urlComponents.url else {
-//            print("유효하지 않는 URL")
-//            return
-//        }
-//
-//        var request = URLRequest(url: url)
-//        request.httpMethod = "GET"
-//
-//        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-//            guard let data = data, error == nil else {
-//                print(error?.localizedDescription ?? "Unknown error")
-//                return
-//            }
-//            do {
-//                let decoder = JSONDecoder()
-//                let response = try decoder.decode(Response.self, from: data)
-//                self.movies = response.results
-//                DispatchQueue.main.async {
-//                    if self.movies.isEmpty {
-//                        self.emptyStateLabel.isHidden = false
-//                    } else {
-//                        self.emptyStateLabel.isHidden = true
-//                    }
-//                    self.movieTableView.reloadData()
-//                }
-//            } catch {
-//                print(error.localizedDescription)
-//            }
-//        }
-//        task.resume()
-//    }
+    
+//    모든 데이터를 불러오는 것이 아닌 20개씩 나눠서 맨 밑으로 가서 스크롤하면 20개 추가되고 또 맨 밑으로 가면 스크롤해서 20개씩 보여주기
     
     private func getDataCell(at indexPath: IndexPath) -> Any? {
         print(#function)
@@ -232,6 +203,12 @@ class HomeTableViewController: UITableViewController {
             movieTableView.deselectRow(at: indexPath, animated: true)
         }
     }
+    
+    private func setTotalCountLabel() {
+        let totalCount = self.movies.count
+        let countString = String(format: "총 %02d개", totalCount)
+        self.totalCountLabel.text = countString
+    }
 }
 
 
@@ -268,11 +245,66 @@ extension HomeTableViewController {
 
 extension HomeTableViewController: UISearchBarDelegate {
     
+//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+//        for cell in movieTableView.visibleCells {
+//            if let cell = cell as? MovieTableViewCell {
+//                cell.storageButton.isSelected = false
+//                cell.storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
+//                cell.storageButton.tintColor = .black
+//            }
+//        }
+//        searchTask?.cancel()
+//
+//        let searchTask = DispatchWorkItem { [weak self] in
+//            self?.setTotalCountLabel()
+//            self?.searchMovies(query: searchText)
+//        }
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: searchTask)
+//
+//        if self.movies.isEmpty {
+//            self.emptyStateLabel.isHidden = false
+//        } else {
+//            self.emptyStateLabel.isHidden = true
+//        }
+//        self.searchTask = searchTask
+//    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        for cell in movieTableView.visibleCells {
+            if let cell = cell as? MovieTableViewCell {
+                cell.storageButton.isSelected = false
+                cell.storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
+                cell.storageButton.tintColor = .black
+            }
+        }
+        searchTask?.cancel()
+
+        let searchTask = DispatchWorkItem { [weak self] in
+            self?.searchMovies(query: searchText)
+            DispatchQueue.main.async {
+                if self?.movies.isEmpty == true {
+                    self?.emptyStateLabel.isHidden = false
+                } else {
+                    self?.emptyStateLabel.isHidden = true
+                }
+                self?.movieTableView.reloadData()
+                self?.setTotalCountLabel()
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: searchTask)
+
+        self.searchTask = searchTask
+    }
+    
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        self.setTotalCountLabel()
         self.movieTableView.reloadData()
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchTask?.cancel()
         guard let searchTerm = searchBar.text, searchTerm.isEmpty == false else { return }
         
         DispatchQueue.main.async {
@@ -283,16 +315,17 @@ extension HomeTableViewController: UISearchBarDelegate {
             query = text
             
             searchMovies(query: query!)
-            print("\(text)")
         }
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
-        searchMovies(query: "")
         
         emptyStateLabel.isHidden = true
         emptyStateLabel.removeFromSuperview()
+        
+        totalCountLabel.isHidden = true
+        totalCountLabel.removeFromSuperview()
         
         self.movieTableView.reloadData()
     }

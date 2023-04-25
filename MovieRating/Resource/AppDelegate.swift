@@ -23,6 +23,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         window?.rootViewController = navigationController
         
+        if #available(iOS 13.0, *) {
+            // For iOS 13 and later
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = .white
+            appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
+            UINavigationBar.appearance().standardAppearance = appearance
+            UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        } else {
+            // For earlier versions of iOS
+            UINavigationBar.appearance().barTintColor = .white
+            UINavigationBar.appearance().tintColor = .black
+            UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.black]
+            UINavigationBar.appearance().isTranslucent = false
+        }
+
         return true
     }
 
