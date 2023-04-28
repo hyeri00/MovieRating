@@ -98,7 +98,7 @@ class MovieDetailViewController: UIViewController {
         return view
     }()
     
-    private let removeMovieCellButton: UIButton = {
+    var removeMovieCellButton: UIButton = {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "trash")?.withTintColor(.black, renderingMode: .alwaysOriginal), for: .normal)
         button.setTitle("  보관함에서 삭제하기", for: .normal)
@@ -109,7 +109,6 @@ class MovieDetailViewController: UIViewController {
     }()
     
     private var movies = [Movie]()
-    var collectionView: UICollectionView!
     private var defaultHeight: CGFloat = 300
     var selectedMovie: (UIImage?, String?, String?, String?)?
     private var detailViewTopConstraint: NSLayoutConstraint!
