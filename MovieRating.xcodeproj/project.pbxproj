@@ -14,7 +14,7 @@
 		1C753DF529E578140074C83D /* MovieTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C753DF429E578140074C83D /* MovieTableViewCell.swift */; };
 		1C753DF829EFEF4E0074C83D /* RateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C753DF729EFEF4E0074C83D /* RateView.swift */; };
 		1C753DFC29EFF0E20074C83D /* RatingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C753DFB29EFF0E20074C83D /* RatingView.swift */; };
-		1CCF1D9A29F97606008ED9E3 /* AlertAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CCF1D9929F97606008ED9E3 /* AlertAction.swift */; };
+		1CD6FE7F29FCEF4C00405FD6 /* MovieData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CD6FE7E29FCEF4C00405FD6 /* MovieData.swift */; };
 		1CE1DB9C29DA974400645F68 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CE1DB9B29DA974400645F68 /* AppDelegate.swift */; };
 		1CE1DB9E29DA974400645F68 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CE1DB9D29DA974400645F68 /* SceneDelegate.swift */; };
 		1CE1DBA029DA974400645F68 /* HomeTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CE1DB9F29DA974400645F68 /* HomeTableViewController.swift */; };
@@ -33,7 +33,7 @@
 		1C753DF429E578140074C83D /* MovieTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieTableViewCell.swift; sourceTree = "<group>"; };
 		1C753DF729EFEF4E0074C83D /* RateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateView.swift; sourceTree = "<group>"; };
 		1C753DFB29EFF0E20074C83D /* RatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingView.swift; sourceTree = "<group>"; };
-		1CCF1D9929F97606008ED9E3 /* AlertAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertAction.swift; sourceTree = "<group>"; };
+		1CD6FE7E29FCEF4C00405FD6 /* MovieData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieData.swift; sourceTree = "<group>"; };
 		1CE1DB9829DA974400645F68 /* MovieRating.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MovieRating.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CE1DB9B29DA974400645F68 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1CE1DB9D29DA974400645F68 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -73,7 +73,6 @@
 			children = (
 				1C753DF729EFEF4E0074C83D /* RateView.swift */,
 				1C753DFB29EFF0E20074C83D /* RatingView.swift */,
-				1CCF1D9929F97606008ED9E3 /* AlertAction.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -117,6 +116,7 @@
 				1C753DF429E578140074C83D /* MovieTableViewCell.swift */,
 				1C709BC929DD64A800E23571 /* MovieCollectionViewCell.swift */,
 				1C6D197D29DD472C00774C4C /* Movie.swift */,
+				1CD6FE7E29FCEF4C00405FD6 /* MovieData.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -271,7 +271,7 @@
 				1CE1DBA029DA974400645F68 /* HomeTableViewController.swift in Sources */,
 				1CE1DB9C29DA974400645F68 /* AppDelegate.swift in Sources */,
 				1C6D197E29DD472C00774C4C /* Movie.swift in Sources */,
-				1CCF1D9A29F97606008ED9E3 /* AlertAction.swift in Sources */,
+				1CD6FE7F29FCEF4C00405FD6 /* MovieData.swift in Sources */,
 				1C709BC829DD5BCD00E23571 /* ToastMessage.swift in Sources */,
 				1C753DF829EFEF4E0074C83D /* RateView.swift in Sources */,
 				1CE1DBB029DA9CE800645F68 /* StorageViewController.swift in Sources */,
@@ -431,7 +431,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIRequiresFullScreen = NO;
-				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDarkContent;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -463,7 +463,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIRequiresFullScreen = NO;
-				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDarkContent;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;

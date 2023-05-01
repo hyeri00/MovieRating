@@ -8,6 +8,7 @@
 import UIKit
 import Kingfisher
 import SafariServices
+import RealmSwift
 
 class HomeTableViewController: UITableViewController {
     
@@ -62,11 +63,11 @@ class HomeTableViewController: UITableViewController {
         return label
     }()
     
+    private var realm: Realm!
     private var query: String?
     private var movies = [Movie]()
     private var searchTask: DispatchWorkItem?
     private let toast = ToastMessage()
-    private var selectedData: [ (UIImage?, String?, String?, String?) ] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -101,7 +102,6 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func setNavigationBar() {
-        navigationController?.navigationBar.barTintColor = .white
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
         
@@ -196,24 +196,21 @@ class HomeTableViewController: UITableViewController {
         }
         fetchMovies(page: currentPage)
     }
-
     
-    private func getDataCell(at indexPath: IndexPath) -> Any? {
-        print(#function)
+    private func getMovieData(at indexPath: IndexPath) -> MovieData? {
         guard let cell = movieTableView.cellForRow(at: indexPath) as? MovieTableViewCell else {
             return nil
         }
 
-        let thumbnailImage = cell.thumbnailImage.image
-        let titleAndYearLabel = cell.titleAndYearLabel.text
-        let genreLabel = cell.genreLabel.text
-        let ratingLabel = cell.ratingLabel.text
-        let data = (thumbnailImage, titleAndYearLabel, genreLabel, ratingLabel)
-        selectedData.append(data)
+        let movie = MovieData()
+        movie.thumbnailImageData = cell.thumbnailImage.image?.pngData()
+        movie.title = cell.titleAndYearLabel.text ?? ""
+        movie.genre = cell.genreLabel.text ?? ""
+        movie.rating = cell.ratingLabel.text ?? ""
 
-        return [data]
+        return movie
     }
-
+    
     @objc private func storageButtonTapped(_ sender: UIButton) {
         print(#function)
         if sender.isSelected {
@@ -227,27 +224,26 @@ class HomeTableViewController: UITableViewController {
             toast.showToast(image: UIImage(named: "check-circle")!,
                             message: "  보관함에 저장 되었습니다.")
             sender.isEnabled = false
-            guard let indexPath = movieTableView.indexPath(for: sender.superview?.superview as! UITableViewCell) else {
+            
+            guard let cell = sender.superview?.superview as? MovieTableViewCell,
+                  let indexPath = movieTableView.indexPath(for: cell),
+                  let movie = getMovieData(at: indexPath)
+            else {
                 return
             }
-
-            // 선택한 데이터를 배열 형태로 가져옴
-            guard let selectedData = getDataCell(at: indexPath) as? [(UIImage?, String?, String?, String?)] else {
-                print("Error: Failed to get selected data")
-                return
+            
+            do {
+                realm = try Realm()
+                try realm.write {
+                    realm.add(movie)
+                }
+                movieTableView.deselectRow(at: indexPath, animated: true)
+            } catch let error as NSError {
+                print("Error: \(error.localizedDescription)")
             }
-
-            // 모든 선택한 데이터를 Tab Bar Controller에 전달
-            if let tabBarVC = self.tabBarController, let navController = tabBarVC.viewControllers?[1] as? UINavigationController, let storageVC = navController.topViewController as? StorageViewController {
-                storageVC.selectedData.append(contentsOf: selectedData)
-            } else {
-                print("Error: Failed to get StorageViewController")
-            }
-
-            movieTableView.deselectRow(at: indexPath, animated: true)
         }
     }
-    
+
     private func setTotalCountLabel() {
         let totalCount = self.movies.count
         let countString = String(format: "총 %02d개", totalCount)
@@ -275,6 +271,7 @@ extension HomeTableViewController {
         cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
         cell.ratingLabel.text = String(format: "%.1f", movie.voteAverage ?? 0.0)
         cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
+        cell.storageButton.tag = indexPath.row
         return cell
     }
     

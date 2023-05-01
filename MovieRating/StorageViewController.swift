@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RealmSwift
 
 class StorageViewController: UIViewController {
     
@@ -32,18 +33,17 @@ class StorageViewController: UIViewController {
         return view
     }()
     
-    private var movies: [Movie] = []
-    private let detailVC = MovieDetailViewController()
-    private var data: [(UIImage?, String?, String?, String?)] = []
-    var selectedData: [(UIImage?, String?, String?, String?)] = []
+    private var realm: Realm!
+    private var moviesData: Results<MovieData>!
+    private var notificationToken: NotificationToken?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setup()
         addViews()
-        getData()
-        setupAddTarget()
+        getMovies()
+        getNotificationToken()
         setNavigationBar()
         setCollectionView()
         setConstraints()
@@ -52,8 +52,12 @@ class StorageViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        getData()
+        getMovies()
         movieCollectionView.reloadData()
+    }
+    
+    deinit {
+        notificationToken?.invalidate()
     }
     
     private func setup() {
@@ -65,18 +69,23 @@ class StorageViewController: UIViewController {
         view.addSubview(movieCollectionView)
     }
     
-    private func getData() {
-        movies = []
-        data = selectedData
+    private func getMovies() {
+        do {
+            realm = try Realm()
+            moviesData = realm.objects(MovieData.self)
+        } catch let error as NSError {
+            print("Error: \(error.localizedDescription)")
+        }
+        
+        moviesData = realm.objects(MovieData.self)
+        print(moviesData as Any)
         movieCollectionView.reloadData()
-        print("Storage에 전달 받은 thumbnailImage: \(String(describing: selectedData.first?.0))")
-        print("Storage에 전달 받은 titleAndYearLabel: \(String(describing: selectedData.first?.1))")
-        print("Storage에 전달 받은 castLabel: \(String(describing: selectedData.first?.2))")
-        print("Storage에 전달 받은 ratingLabel: \(String(describing: selectedData.first?.3))")
     }
     
-    private func setupAddTarget() {
-        detailVC.removeMovieCellButton.addTarget(self, action: #selector(removeMovieCellButtonTapped), for: .touchUpInside)
+    private func getNotificationToken() {
+        notificationToken = realm.observe { [weak self] (notification, realm) in
+            self?.movieCollectionView.reloadData()
+        }
     }
 
     private func setNavigationBar() {
@@ -111,16 +120,18 @@ class StorageViewController: UIViewController {
         ])
     }
     
-    @objc private func removeMovieCellButtonTapped(sender: UIButton) {
-        guard sender.tag < data.count else { return }
-        let indexToRemove = sender.tag
-        let indexPathToRemove = IndexPath(row: indexToRemove, section: 0)
-        movieCollectionView.performBatchUpdates({
-            data.remove(at: indexToRemove)
-            movieCollectionView.deleteItems(at: [indexPathToRemove])
-        }, completion: nil)
-        detailVC.removeMovieCellButton.removeTarget(self, action: #selector(removeMovieCellButtonTapped), for: .touchUpInside)
-        self.dismiss(animated: false)
+    func deleteMovie(at indexPath: IndexPath) {
+        let movie = moviesData[indexPath.row]
+        do {
+            let realm = try Realm()
+            try realm.write {
+                realm.delete(movie)
+            }
+            movieCollectionView.deleteItems(at: [indexPath])
+            movieCollectionView.reloadData()
+        } catch {
+            print("Failed to delete movie: \(error.localizedDescription)")
+        }
     }
     
     @objc private func showMovieCollectionViewCellChooseDelete() {
@@ -135,29 +146,30 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("들어온 data count: \(data.count)")
-        if data.isEmpty {
+        print("들어온 data count: \(moviesData.count)")
+        if moviesData.isEmpty {
             self.emptyLabel.isHidden = false
         } else {
             self.emptyLabel.isHidden = true
         }
-        return data.count
+        return moviesData.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
-        let movieData = data[indexPath.item]
-        cell.thumbnailImage.image = movieData.0
-        cell.titleLabel.text = movieData.1
-        print("thumbnailImage: \(String(describing: movieData.0))")
-        print("titleLabel: \(String(describing: movieData.1))")
+        let movie = moviesData[indexPath.item]
+        cell.thumbnailImage.image = UIImage(data: movie.thumbnailImageData ?? Data())
+        cell.titleLabel.text = "\(movie.title)"
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let deatilVC = MovieDetailViewController()
-        deatilVC.modalPresentationStyle = .overFullScreen
-        deatilVC.selectedMovie = selectedData[indexPath.item]
-        self.present(deatilVC, animated: false, completion: nil)
+        let detailVC = MovieDetailViewController()
+        detailVC.modalPresentationStyle = .overFullScreen
+        
+        let selectedMovie = realm.objects(MovieData.self)[indexPath.item]
+        detailVC.moviesData = selectedMovie
+        
+        self.present(detailVC, animated: false, completion: nil)
     }
 }

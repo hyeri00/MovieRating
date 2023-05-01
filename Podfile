@@ -6,8 +6,7 @@ target 'MovieRating' do
   use_frameworks!
 
   # Pods for MovieRating
-  pod 'Alamofire', '~> 5.1'
   pod 'Kingfisher'
   pod 'SnapKit'
-  pod 'AlamofireImage'
+  pod 'RealmSwift'
 end

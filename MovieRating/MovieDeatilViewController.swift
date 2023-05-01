@@ -7,6 +7,7 @@
 
 import UIKit
 import SafariServices
+import RealmSwift
 
 class MovieDetailViewController: UIViewController {
     
@@ -35,7 +36,6 @@ class MovieDetailViewController: UIViewController {
     
     private var titleAndYearLabel: UILabel = {
         let label = UILabel()
-        label.text = ""
         label.textColor = .black
         label.font = .boldSystemFont(ofSize: 17)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -98,7 +98,7 @@ class MovieDetailViewController: UIViewController {
         return view
     }()
     
-    var removeMovieCellButton: UIButton = {
+    let removeMovieCellButton: UIButton = {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "trash")?.withTintColor(.black, renderingMode: .alwaysOriginal), for: .normal)
         button.setTitle("  보관함에서 삭제하기", for: .normal)
@@ -108,16 +108,15 @@ class MovieDetailViewController: UIViewController {
         return button
     }()
     
-    private var movies = [Movie]()
-    private var defaultHeight: CGFloat = 300
-    var selectedMovie: (UIImage?, String?, String?, String?)?
+    var moviesData: MovieData?
+    private var realm: Realm!
     private var detailViewTopConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         addViews()
-        getData()
+        getMovies()
         setupAddTarget()
         setSeparatorView()
         setBackgroundView()
@@ -143,18 +142,28 @@ class MovieDetailViewController: UIViewController {
         view.addSubview(removeMovieCellButton)
     }
     
-    private func getData() {
-        if let movie = selectedMovie {
-            thumbnailImage.image = movie.0
-            titleAndYearLabel.text = movie.1
-            genreLabel.text = movie.2
-            ratingLabel.text = movie.3
+    private func getMovies() {
+        do {
+            realm = try Realm()
+        } catch let error as NSError {
+            print("Failed to open Realm: \(error.localizedDescription)")
+        }
+        
+        if let movie = moviesData {
+            if let imageData = movie.thumbnailImageData {
+                let image = UIImage(data: imageData)
+                thumbnailImage.image = image
+            }
+            titleAndYearLabel.text = "\(movie.title)"
+            genreLabel.text = movie.genre
+            ratingLabel.text = "\(movie.rating)"
         }
     }
     
     private func setupAddTarget() {
         movieDetailSiteButton.addTarget(self, action: #selector(goMovieDeatilSite), for: .touchUpInside)
         rateView.addTarget(self, action: #selector(didChangeRate), for: .valueChanged)
+        removeMovieCellButton.addTarget(self, action: #selector(deleteMovieCollectionView), for: .touchUpInside)
     }
     
     private func setSeparatorView() {
@@ -230,7 +239,7 @@ class MovieDetailViewController: UIViewController {
         let bottomPadding: CGFloat = view.safeAreaInsets.bottom
         let topConstant = view.safeAreaInsets.bottom + view.safeAreaLayoutGuide.layoutFrame.height
         detailViewTopConstraint = detailView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: topConstant)
-        detailViewTopConstraint.constant = (safeAreaHeight + bottomPadding) - defaultHeight
+        detailViewTopConstraint.constant = (safeAreaHeight + bottomPadding) - 300
         
         UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseIn, animations: {
             self.view.layoutIfNeeded()
@@ -249,6 +258,22 @@ class MovieDetailViewController: UIViewController {
         NotificationCenter.default.post(name: NSNotification.Name("didChangeRate"), object: nil, userInfo: userInfo)
     }
     
+    @objc func deleteMovieCollectionView() {
+        guard let movie = moviesData else {
+            return
+        }
+        do {
+            let realm = try Realm()
+            try realm.write {
+                realm.delete(movie)
+                dismiss(animated: false)
+            }
+            navigationController?.popViewController(animated: true)
+        } catch {
+            print("Failed to delete movie: \(error.localizedDescription)")
+        }
+    }
+
     @objc private func backgroundViewTapped(_ tapRecognizer: UITapGestureRecognizer) {
         let safeAreaHeight = view.safeAreaLayoutGuide.layoutFrame.height
         let bottomPadding = view.safeAreaInsets.bottom
