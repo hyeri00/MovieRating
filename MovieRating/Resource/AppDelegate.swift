@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RealmSwift
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -22,6 +23,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let navigationController = UINavigationController(rootViewController: homeViewController)
         
         window?.rootViewController = navigationController
+        
+        let config = Realm.Configuration(
+            schemaVersion: 1,
+            migrationBlock: { migration, oldSchemaVersion in
+                if oldSchemaVersion < 1 {
+                    migration.enumerateObjects(ofType: MovieData.className()) { oldObject, newObject in
+                        newObject!["userRate"] = 0.0
+                    }
+                }
+            })
+        Realm.Configuration.defaultConfiguration = config
+        let _ = try! Realm()
         
         return true
     }

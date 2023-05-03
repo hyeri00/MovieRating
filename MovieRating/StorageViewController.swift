@@ -43,6 +43,7 @@ class StorageViewController: UIViewController {
         setup()
         addViews()
         getMovies()
+        getData()
         getNotificationToken()
         setNavigationBar()
         setCollectionView()
@@ -73,16 +74,28 @@ class StorageViewController: UIViewController {
         do {
             realm = try Realm()
             moviesData = realm.objects(MovieData.self)
+            
+            if moviesData.isEmpty {
+                self.emptyLabel.isHidden = false
+            } else {
+                self.emptyLabel.isHidden = true
+            }
+            
+            movieCollectionView.reloadData()
         } catch let error as NSError {
             print("Error: \(error.localizedDescription)")
         }
-        
-        moviesData = realm.objects(MovieData.self)
-        print(moviesData as Any)
-        movieCollectionView.reloadData()
+    }
+    
+    private func getData() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateEvaluationLabel(_:)),
+                                               name: NSNotification.Name("didChangeRate"),
+                                               object: nil)
     }
     
     private func getNotificationToken() {
+        guard let realm = realm else { return }
         notificationToken = realm.observe { [weak self] (notification, realm) in
             self?.movieCollectionView.reloadData()
         }
@@ -134,6 +147,29 @@ class StorageViewController: UIViewController {
         }
     }
     
+    @objc func updateEvaluationLabel(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let rate = userInfo["rate"] as? CGFloat,
+              let cellIndex = movieCollectionView.indexPathsForSelectedItems?.first else {
+            return
+        }
+        
+        let movie = moviesData[cellIndex.item]
+        
+        do {
+            let realm = try Realm()
+            try realm.write {
+                movie.userRate = rate
+            }
+        } catch let error as NSError {
+            print("Error updating movie userRate: \(error.localizedDescription)")
+        }
+
+        if let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell {
+            selectedCell.evaluationLabel.text = "평가 함 ⭐️\(rate)"
+        }
+    }
+    
     @objc private func showMovieCollectionViewCellChooseDelete() {
         
     }
@@ -147,19 +183,21 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("들어온 data count: \(moviesData.count)")
-        if moviesData.isEmpty {
-            self.emptyLabel.isHidden = false
-        } else {
-            self.emptyLabel.isHidden = true
-        }
-        return moviesData.count
+        return self.moviesData?.count ?? 0
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
         let movie = moviesData[indexPath.item]
         cell.thumbnailImage.image = UIImage(data: movie.thumbnailImageData ?? Data())
         cell.titleLabel.text = "\(movie.title)"
+        
+        if movie.userRate > 0 {
+            cell.evaluationLabel.text = "평가 함 ⭐️ \(movie.userRate)"
+            cell.evaluationLabel.textColor = .black
+        } else {
+            cell.evaluationLabel.text = "평가 안 함 ⭐️ 0.0"
+        }
         return cell
     }
     

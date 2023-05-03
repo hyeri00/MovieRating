@@ -259,19 +259,29 @@ class MovieDetailViewController: UIViewController {
     }
     
     @objc func deleteMovieCollectionView() {
-        guard let movie = moviesData else {
-            return
-        }
-        do {
-            let realm = try Realm()
-            try realm.write {
-                realm.delete(movie)
-                dismiss(animated: false)
+        let alert = UIAlertController(title: "Warning", message: "정말 삭제하시겠습니까?\n삭제할 시 복구가 불가능 합니다.", preferredStyle: .alert)
+        
+        let cancel = UIAlertAction(title: "취소", style: .cancel)
+        let action = UIAlertAction(title: "확인", style: .default) { _ in
+            guard let movie = self.moviesData else {
+                return
             }
-            navigationController?.popViewController(animated: true)
-        } catch {
-            print("Failed to delete movie: \(error.localizedDescription)")
+            do {
+                let realm = try Realm()
+                try realm.write {
+                    realm.delete(movie)
+                    self.dismiss(animated: false)
+                }
+                self.navigationController?.popViewController(animated: true)
+            } catch {
+                print("Failed to delete movie: \(error.localizedDescription)")
+            }
         }
+        
+        alert.addAction(cancel)
+        alert.addAction(action)
+        
+        self.present(alert, animated: true, completion: nil)
     }
 
     @objc private func backgroundViewTapped(_ tapRecognizer: UITapGestureRecognizer) {

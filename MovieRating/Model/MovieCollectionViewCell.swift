@@ -42,15 +42,11 @@ class MovieCollectionViewCell: UICollectionViewCell {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
-    var currentRating: CGFloat = 0
-    var selectedCellIndex: Int?
-    
+        
     override init(frame: CGRect) {
         super.init(frame: frame)
         
         addViews()
-        getData()
         setConstraints()
     }
     
@@ -61,13 +57,6 @@ class MovieCollectionViewCell: UICollectionViewCell {
     private func addViews() {
         contentView.addSubview(thumbnailImage)
         contentView.addSubview(stackView)
-    }
-    
-    private func getData() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateEvaluationLabel(_:)),
-                                               name: NSNotification.Name("didChangeRate"),
-                                               object: nil)
     }
     
     private func setConstraints() {
@@ -82,32 +71,4 @@ class MovieCollectionViewCell: UICollectionViewCell {
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
     }
-    
-    @objc func updateEvaluationLabel(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-                let rate = userInfo["rate"] as? CGFloat else { return }
-        evaluationLabel.text = "평가 함 ⭐️\(rate)"
-        evaluationLabel.textColor = .black
-        evaluationLabel.font = .boldSystemFont(ofSize: 13)
-
-        print("Rate to: \(rate)")
-        currentRating = rate
-    }
-    
-//    @objc func updateEvaluationLabel(_ notification: Notification) {
-//        print(#function)
-//        guard let userInfo = notification.userInfo,
-//              let rate = userInfo["rate"] as? CGFloat else { return }
-//
-//        if let collectionView = self.superview as? UICollectionView,
-//           !collectionView.indexPathsForVisibleItems.isEmpty,
-//           let indexPath = collectionView.indexPathsForVisibleItems.first(where: { $0.item == selectedCellIndex }),
-//           let cell = collectionView.cellForItem(at: indexPath) as? MovieCollectionViewCell {
-//            cell.evaluationLabel.text = "평가 함 ⭐️\(rate)"
-//            cell.evaluationLabel.textColor = .black
-//            cell.evaluationLabel.font = .boldSystemFont(ofSize: 13)
-//            print("evaluation label updated at index: \(indexPath.item)")
-//        }
-//        print("Rate to: \(rate)")
-//    }
 }
