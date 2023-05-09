@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import RealmSwift
 
 class MovieCollectionViewCell: UICollectionViewCell {
     
@@ -43,6 +44,10 @@ class MovieCollectionViewCell: UICollectionViewCell {
         return view
     }()
         
+    var collectionView: UICollectionView!
+    private var realm: Realm!
+    private var moviesData: Results<MovieData>!
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -71,4 +76,41 @@ class MovieCollectionViewCell: UICollectionViewCell {
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
     }
+    
+    func configure() {
+        getRateLabel()
+    }
+    
+    private func getRateLabel() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateEvaluationLabel),
+                                               name: NSNotification.Name("didChangeRate"),
+                                               object: nil)
+    }
+    
+    
+    @objc func updateEvaluationLabel(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+            let rate = userInfo["rate"] as? CGFloat,
+            let cellIndex = collectionView.indexPathsForSelectedItems?.first,
+            let selectedCell = collectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
+                return
+        }
+        let movie = moviesData[cellIndex.item]
+
+        do {
+            let realm = try Realm()
+            try realm.write {
+                movie.userRate = rate
+            }
+        } catch let error as NSError {
+            print("Error updating movie userRate: \(error.localizedDescription)")
+        }
+
+        selectedCell.evaluationLabel.text = "평가 함 ⭐️ \(rate)"
+        selectedCell.evaluationLabel.textColor = .black
+
+        print("userInfo: \(userInfo)")
+    }
+
 }

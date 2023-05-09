@@ -174,8 +174,10 @@ class HomeTableViewController: UITableViewController {
                         DispatchQueue.main.async {
                             if self.movies.isEmpty {
                                 self.emptySearchLabel.isHidden = false
+                                self.stackView.isHidden = true
                             } else {
                                 self.emptySearchLabel.isHidden = true
+                                self.stackView.isHidden = true
                             }
                             self.setTotalCountLabel()
                             self.stackView.isHidden = true
@@ -211,6 +213,13 @@ class HomeTableViewController: UITableViewController {
         return movie
     }
     
+    private func setTotalCountLabel() {
+        let totalCount = self.movies.count
+        let countString = String(format: "총 %02d개", totalCount)
+        self.totalCountLabel.text = countString
+        print("총 영화 개수: \(totalCount)")
+    }
+    
     @objc private func storageButtonTapped(_ sender: UIButton) {
         print(#function)
         if sender.isSelected {
@@ -222,7 +231,7 @@ class HomeTableViewController: UITableViewController {
             sender.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
             sender.tintColor = .black
             toast.showToast(image: UIImage(named: "check-circle")!,
-                            message: "  보관함에 저장 되었습니다.")
+                            message: "보관함에 저장 되었습니다.")
             sender.isEnabled = false
             
             guard let cell = sender.superview?.superview as? MovieTableViewCell,
@@ -242,13 +251,6 @@ class HomeTableViewController: UITableViewController {
                 print("Error: \(error.localizedDescription)")
             }
         }
-    }
-
-    private func setTotalCountLabel() {
-        let totalCount = self.movies.count
-        let countString = String(format: "총 %02d개", totalCount)
-        self.totalCountLabel.text = countString
-        print("총 영화 개수: \(totalCount)")
     }
 }
 

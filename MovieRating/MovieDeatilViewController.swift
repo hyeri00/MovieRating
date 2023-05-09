@@ -109,7 +109,9 @@ class MovieDetailViewController: UIViewController {
     }()
     
     var moviesData: MovieData?
+    weak var delegate: MovieDetailDelegate?
     private var realm: Realm!
+    private let toast = ToastMessage()
     private var detailViewTopConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
@@ -117,6 +119,7 @@ class MovieDetailViewController: UIViewController {
         
         addViews()
         getMovies()
+        getRateView()
         setupAddTarget()
         setSeparatorView()
         setBackgroundView()
@@ -160,9 +163,16 @@ class MovieDetailViewController: UIViewController {
         }
     }
     
+    private func getRateView() {
+        if let movie = moviesData {
+            rateView.currentStar = Int(movie.userRate)
+            rateView.updateButtonAppearance()
+        }
+    }
+    
     private func setupAddTarget() {
         movieDetailSiteButton.addTarget(self, action: #selector(goMovieDeatilSite), for: .touchUpInside)
-        rateView.addTarget(self, action: #selector(didChangeRate), for: .valueChanged)
+        rateView.addTarget(self, action: #selector(changeRate), for: .valueChanged)
         removeMovieCellButton.addTarget(self, action: #selector(deleteMovieCollectionView), for: .touchUpInside)
     }
     
@@ -249,20 +259,29 @@ class MovieDetailViewController: UIViewController {
     @objc private func goMovieDeatilSite() {
     }
     
-    @objc func didChangeRate() {
+    @objc func changeRate() {
         print(#function)
-
+        
         let rate = CGFloat(rateView.currentStar)
         print("Rating changed to: \(rate)")
         let userInfo = ["rate": rate]
-        NotificationCenter.default.post(name: NSNotification.Name("didChangeRate"), object: nil, userInfo: userInfo)
+        NotificationCenter.default.post(name: NSNotification.Name("didChangeRate"),
+                                        object: nil,
+                                        userInfo: userInfo)
+        
+        let rateButton = rateView.currentStar
+        print("button count: \(rateButton)")
+        UserDefaults.standard.set(rateButton, forKey: "buttonState")
     }
     
     @objc func deleteMovieCollectionView() {
-        let alert = UIAlertController(title: "Warning", message: "정말 삭제하시겠습니까?\n삭제할 시 복구가 불가능 합니다.", preferredStyle: .alert)
-        
+        let alert = UIAlertController(title: "Warning", message: "정말 삭제하시겠습니까?\n삭제할 시 복구가 불가능합니다.", preferredStyle: .alert)
+
         let cancel = UIAlertAction(title: "취소", style: .cancel)
-        let action = UIAlertAction(title: "확인", style: .default) { _ in
+        let action = UIAlertAction(title: "확인", style: .default) { [self] _ in
+            self.toast.showToast(image: UIImage(named: "trash")!,
+                            message: "삭제가 완료됐습니다.")
+
             guard let movie = self.moviesData else {
                 return
             }
@@ -272,18 +291,19 @@ class MovieDetailViewController: UIViewController {
                     realm.delete(movie)
                     self.dismiss(animated: false)
                 }
+                delegate?.updateCollectionView()
                 self.navigationController?.popViewController(animated: true)
             } catch {
                 print("Failed to delete movie: \(error.localizedDescription)")
             }
         }
-        
+
         alert.addAction(cancel)
         alert.addAction(action)
-        
+
         self.present(alert, animated: true, completion: nil)
     }
-
+    
     @objc private func backgroundViewTapped(_ tapRecognizer: UITapGestureRecognizer) {
         let safeAreaHeight = view.safeAreaLayoutGuide.layoutFrame.height
         let bottomPadding = view.safeAreaInsets.bottom

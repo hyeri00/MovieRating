@@ -36,6 +36,8 @@ class ToastMessage {
             img.snp.makeConstraints {
                 $0.left.equalTo(20)
                 $0.centerY.equalToSuperview()
+                $0.width.equalTo(20)
+                $0.height.equalTo(20)
             }
             
             let label = UILabel()
@@ -45,7 +47,7 @@ class ToastMessage {
             label.textAlignment = .center
             label.font = .systemFont(ofSize: 14)
             label.snp.makeConstraints({
-                $0.left.equalTo(50)
+                $0.left.equalTo(60)
                 $0.centerY.equalToSuperview()
             })
             

@@ -43,8 +43,7 @@ class StorageViewController: UIViewController {
         setup()
         addViews()
         getMovies()
-        getData()
-        getNotificationToken()
+        getRateLabel()
         setNavigationBar()
         setCollectionView()
         setConstraints()
@@ -54,11 +53,7 @@ class StorageViewController: UIViewController {
         super.viewWillAppear(animated)
 
         getMovies()
-        movieCollectionView.reloadData()
-    }
-    
-    deinit {
-        notificationToken?.invalidate()
+        getRateLabel()
     }
     
     private func setup() {
@@ -87,18 +82,11 @@ class StorageViewController: UIViewController {
         }
     }
     
-    private func getData() {
+    private func getRateLabel() {
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateEvaluationLabel(_:)),
+                                               selector: #selector(updateEvaluationLabel),
                                                name: NSNotification.Name("didChangeRate"),
                                                object: nil)
-    }
-    
-    private func getNotificationToken() {
-        guard let realm = realm else { return }
-        notificationToken = realm.observe { [weak self] (notification, realm) in
-            self?.movieCollectionView.reloadData()
-        }
     }
 
     private func setNavigationBar() {
@@ -107,13 +95,6 @@ class StorageViewController: UIViewController {
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
         
         navigationItem.title = "보관함"
-        
-        let image = UIImage(systemName: "trash.fill")?.withTintColor(.black, renderingMode: .alwaysOriginal)
-        navigationController?.navigationBar.barTintColor = .white
-        navigationController?.navigationBar.shadowImage = UIImage()
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: image, style: .done,
-            target: self, action: #selector(showMovieCollectionViewCellChooseDelete))
     }
     
     private func setCollectionView() {
@@ -133,29 +114,15 @@ class StorageViewController: UIViewController {
         ])
     }
     
-    func deleteMovie(at indexPath: IndexPath) {
-        let movie = moviesData[indexPath.row]
-        do {
-            let realm = try Realm()
-            try realm.write {
-                realm.delete(movie)
-            }
-            movieCollectionView.deleteItems(at: [indexPath])
-            movieCollectionView.reloadData()
-        } catch {
-            print("Failed to delete movie: \(error.localizedDescription)")
-        }
-    }
-    
-    @objc func updateEvaluationLabel(_ notification: Notification) {
+    @objc func updateEvaluationLabel(notification: Notification) {
         guard let userInfo = notification.userInfo,
-              let rate = userInfo["rate"] as? CGFloat,
-              let cellIndex = movieCollectionView.indexPathsForSelectedItems?.first else {
-            return
+            let rate = userInfo["rate"] as? CGFloat,
+            let cellIndex = movieCollectionView.indexPathsForSelectedItems?.first,
+            let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
+                return
         }
-        
         let movie = moviesData[cellIndex.item]
-        
+
         do {
             let realm = try Realm()
             try realm.write {
@@ -165,11 +132,12 @@ class StorageViewController: UIViewController {
             print("Error updating movie userRate: \(error.localizedDescription)")
         }
 
-        if let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell {
-            selectedCell.evaluationLabel.text = "평가 함 ⭐️\(rate)"
-        }
+        selectedCell.evaluationLabel.text = "평가 함 ⭐️ \(rate)"
+        selectedCell.evaluationLabel.textColor = .black
+
+        print("userInfo: \(userInfo)")
     }
-    
+
     @objc private func showMovieCollectionViewCellChooseDelete() {
         
     }
@@ -191,13 +159,6 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
         let movie = moviesData[indexPath.item]
         cell.thumbnailImage.image = UIImage(data: movie.thumbnailImageData ?? Data())
         cell.titleLabel.text = "\(movie.title)"
-        
-        if movie.userRate > 0 {
-            cell.evaluationLabel.text = "평가 함 ⭐️ \(movie.userRate)"
-            cell.evaluationLabel.textColor = .black
-        } else {
-            cell.evaluationLabel.text = "평가 안 함 ⭐️ 0.0"
-        }
         return cell
     }
     
@@ -207,7 +168,15 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
         
         let selectedMovie = realm.objects(MovieData.self)[indexPath.item]
         detailVC.moviesData = selectedMovie
+        detailVC.delegate = self
         
         self.present(detailVC, animated: false, completion: nil)
+    }
+}
+
+
+extension StorageViewController: MovieDetailDelegate {
+    func updateCollectionView() {
+        movieCollectionView.reloadData()
     }
 }

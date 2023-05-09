@@ -11,7 +11,7 @@ class RateView: RatingView {
 
     var starNumber: Int = 5 { didSet { bind() } }
     open var currentStar: Int = 0
-    private var buttons: [UIButton] = []
+    var buttons: [UIButton] = []
 
     lazy var stackView: UIStackView = {
         let view = UIStackView()
@@ -42,6 +42,16 @@ class RateView: RatingView {
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
             stackView.topAnchor.constraint(equalTo: topAnchor)
         ])
+    }
+    
+    func updateButtonAppearance() {
+        for (index, button) in buttons.enumerated() {
+            if index <= currentStar - 1 {
+                button.setImage(UIImage(systemName: "star.fill"), for: .normal)
+            } else {
+                button.setImage(UIImage(systemName: "star"), for: .normal)
+            }
+        }
     }
 
     override func bind() {
