@@ -25,17 +25,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = navigationController
         
         let config = Realm.Configuration(
-            schemaVersion: 1,
+            schemaVersion: 2, 
             migrationBlock: { migration, oldSchemaVersion in
                 if oldSchemaVersion < 1 {
                     migration.enumerateObjects(ofType: MovieData.className()) { oldObject, newObject in
                         newObject!["userRate"] = 0.0
                     }
                 }
+                if oldSchemaVersion < 2 {
+                    migration.enumerateObjects(ofType: MovieData.className()) { oldObject, newObject in
+                        newObject!["isBookmarked"] = false
+                    }
+                }
             })
         Realm.Configuration.defaultConfiguration = config
         let _ = try! Realm()
-        
         return true
     }
 

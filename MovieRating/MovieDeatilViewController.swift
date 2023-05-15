@@ -259,7 +259,7 @@ class MovieDetailViewController: UIViewController {
     @objc private func goMovieDeatilSite() {
     }
     
-    @objc func changeRate() {
+    @objc private func changeRate() {
         print(#function)
         
         let rate = CGFloat(rateView.currentStar)
@@ -274,7 +274,7 @@ class MovieDetailViewController: UIViewController {
         UserDefaults.standard.set(rateButton, forKey: "buttonState")
     }
     
-    @objc func deleteMovieCollectionView() {
+    @objc private func deleteMovieCollectionView() {
         let alert = UIAlertController(title: "Warning", message: "정말 삭제하시겠습니까?\n삭제할 시 복구가 불가능합니다.", preferredStyle: .alert)
 
         let cancel = UIAlertAction(title: "취소", style: .cancel)

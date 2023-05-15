@@ -114,7 +114,7 @@ class StorageViewController: UIViewController {
         ])
     }
     
-    @objc func updateEvaluationLabel(notification: Notification) {
+    @objc private func updateEvaluationLabel(notification: Notification) {
         guard let userInfo = notification.userInfo,
             let rate = userInfo["rate"] as? CGFloat,
             let cellIndex = movieCollectionView.indexPathsForSelectedItems?.first,
@@ -159,6 +159,14 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
         let movie = moviesData[indexPath.item]
         cell.thumbnailImage.image = UIImage(data: movie.thumbnailImageData ?? Data())
         cell.titleLabel.text = "\(movie.title)"
+        
+        if movie.userRate > 0 {
+            cell.evaluationLabel.text = "평가 함 ⭐️ \(movie.userRate)"
+            cell.evaluationLabel.textColor = .black
+        } else {
+            cell.evaluationLabel.text = "평가 안 함 ⭐️ 0.0"
+            cell.evaluationLabel.textColor = .lightGray
+        }
         return cell
     }
     

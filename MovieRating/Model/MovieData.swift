@@ -15,7 +15,8 @@ class MovieData: Object {
     @objc dynamic var genre: String = ""
     @objc dynamic var rating: String = ""
     @objc dynamic var userRate: Double = 0
-    
+    @objc dynamic var isBookmarked = false
+        
     override static func primaryKey() -> String? {
         return "id"
     }

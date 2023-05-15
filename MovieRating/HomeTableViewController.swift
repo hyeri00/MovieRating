@@ -66,8 +66,15 @@ class HomeTableViewController: UITableViewController {
     private var realm: Realm!
     private var query: String?
     private var movies = [Movie]()
+    private var currentPage = 1
+    private var totalPages = 1
     private var searchTask: DispatchWorkItem?
     private let toast = ToastMessage()
+    private var allMovies = [Movie]()
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .darkContent
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -82,7 +89,9 @@ class HomeTableViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        setNavigationBar()
+        if let searchText = query {
+            navigationItem.searchController?.searchBar.text = searchText
+        }
     }
     
     private func setup() {
@@ -102,6 +111,10 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func setNavigationBar() {
+        let searchController = UISearchController(searchResultsController: nil)
+        navigationItem.searchController = searchController
+        
+        
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
         
@@ -140,63 +153,72 @@ class HomeTableViewController: UITableViewController {
         urlComponents.queryItems = [
             URLQueryItem(name: "api_key", value: "73861d304f91be437d4465b52141a39b"),
             URLQueryItem(name: "query", value: query),
-            URLQueryItem(name: "language", value: "ko-KR")
+            URLQueryItem(name: "language", value: "ko-KR"),
+            URLQueryItem(name: "page", value: "\(currentPage)")
         ]
         
-        var allMovies = [Movie]()
-        let currentPage = 1
-        var totalPages = 1
+        guard let url = urlComponents.url else {
+            print("유효하지 않은 URL: \(urlComponents.debugDescription)")
+            return
+        }
         
-        func fetchMovies(page: Int) {
-            var urlComponents = urlComponents
-            urlComponents.queryItems?.append(URLQueryItem(name: "page", value: "\(page)"))
-            guard let url = urlComponents.url else {
-                print("유효하지 않는 URL")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print(error?.localizedDescription ?? "Unknown error")
                 return
             }
+            do {
+                let decoder = JSONDecoder()
+                let response = try decoder.decode(Response.self, from: data)
+                let newMovies = response.results
+                let totalResults = response.totalResults
 
-            var request = URLRequest(url: url)
-            request.httpMethod = "GET"
+                self.totalPages = response.totalPages
+                self.allMovies += newMovies
 
-            let task = URLSession.shared.dataTask(with: url) { data, response, error in
-                guard let data = data, error == nil else {
-                    print(error?.localizedDescription ?? "Unknown error")
-                    return
-                }
-                do {
-                    let decoder = JSONDecoder()
-                    let response = try decoder.decode(Response.self, from: data)
-                    allMovies += response.results
-                    totalPages = response.totalPages
+                DispatchQueue.main.async { [self] in
+                    movies = []
                     
-                    if page == totalPages {
-                        self.movies = allMovies
-                        DispatchQueue.main.async {
-                            if self.movies.isEmpty {
-                                self.emptySearchLabel.isHidden = false
-                                self.stackView.isHidden = true
-                            } else {
-                                self.emptySearchLabel.isHidden = true
-                                self.stackView.isHidden = true
-                            }
-                            self.setTotalCountLabel()
-                            self.stackView.isHidden = true
-                            self.movieTableView.reloadData()
-                        }
+                    if currentPage == 1 {
+                        movies = newMovies
                     } else {
-                        fetchMovies(page: page+1)
+                        let lastRowIndex = movies.count - 1
+                        var indexPaths = [IndexPath]()
+                        for (index, movie) in newMovies.enumerated() {
+                            let indexPath = IndexPath(row: lastRowIndex + index + 1, section: 0)
+                            movies.append(movie)
+                            indexPaths.append(indexPath)
+                        }
+                        movieTableView.insertRows(at: indexPaths, with: .fade)
                     }
-                } catch {
-                    print(error.localizedDescription)
+
+                    if movies.isEmpty {
+                        stackView.isHidden = true
+                        emptySearchLabel.isHidden = false
+                    } else {
+                        stackView.isHidden = true
+                        emptySearchLabel.isHidden = true
+                    }
+                    setTotalCountLabel(totalResults)
+                    movieTableView.reloadData()
                 }
+
+            } catch {
+                print(error.localizedDescription)
             }
-            task.resume()
         }
-        DispatchQueue.main.async {
-            self.movieTableView.isHidden = false
-            self.totalCountLabel.isHidden = false
+        
+        DispatchQueue.main.async { [self] in
+            movieTableView.reloadData()
+            movieTableView.isHidden = false
+            totalCountLabel.isHidden = false
         }
-        fetchMovies(page: currentPage)
+        
+        task.resume()
+        currentPage += 1
     }
     
     private func getMovieData(at indexPath: IndexPath) -> MovieData? {
@@ -213,8 +235,7 @@ class HomeTableViewController: UITableViewController {
         return movie
     }
     
-    private func setTotalCountLabel() {
-        let totalCount = self.movies.count
+    private func setTotalCountLabel(_ totalCount: Int) {
         let countString = String(format: "총 %02d개", totalCount)
         self.totalCountLabel.text = countString
         print("총 영화 개수: \(totalCount)")
@@ -222,34 +243,32 @@ class HomeTableViewController: UITableViewController {
     
     @objc private func storageButtonTapped(_ sender: UIButton) {
         print(#function)
-        if sender.isSelected {
-            sender.isSelected = false
-            sender.setImage(UIImage(systemName: "bookmark"), for: .normal)
-            sender.tintColor = .black
-        } else {
-            sender.isSelected = true
-            sender.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
-            sender.tintColor = .black
-            toast.showToast(image: UIImage(named: "check-circle")!,
-                            message: "보관함에 저장 되었습니다.")
-            sender.isEnabled = false
-            
-            guard let cell = sender.superview?.superview as? MovieTableViewCell,
-                  let indexPath = movieTableView.indexPath(for: cell),
-                  let movie = getMovieData(at: indexPath)
-            else {
-                return
+        guard let cell = sender.superview?.superview as? MovieTableViewCell,
+              let indexPath = movieTableView.indexPath(for: cell),
+              let movie = getMovieData(at: indexPath)
+        else {
+            return
+        }
+
+        do {
+            realm = try Realm()
+            try realm.write {
+                movie.isBookmarked = true
+                sender.isSelected = true
+
+                sender.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
+                sender.tintColor = .black
+
+                toast.showToast(image: UIImage(named: "check-circle")!,
+                                message: "보관함에 저장되었습니다.")
+
+                sender.isEnabled = false
+                movie.isBookmarked = sender.isEnabled
+                realm.add(movie)
             }
-            
-            do {
-                realm = try Realm()
-                try realm.write {
-                    realm.add(movie)
-                }
-                movieTableView.deselectRow(at: indexPath, animated: true)
-            } catch let error as NSError {
-                print("Error: \(error.localizedDescription)")
-            }
+            movieTableView.deselectRow(at: indexPath, animated: true)
+        } catch let error as NSError {
+            print("Error: \(error.localizedDescription)")
         }
     }
 }
@@ -263,17 +282,34 @@ extension HomeTableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieTableViewCell", for: indexPath) as! MovieTableViewCell
-        let movie = movies[indexPath.row]
-        if let posterPath = movie.posterPath {
-            let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
-            cell.thumbnailImage.kf.setImage(with: posterURL,
-                                            placeholder: UIImage(systemName: "photo")?.withTintColor(.black, renderingMode: .alwaysOriginal))
+        
+        guard indexPath.row < movies.count else { return cell }
+        
+        DispatchQueue.main.async { [self] in
+            let movie = movies[indexPath.row]
+            if let posterPath = movie.posterPath {
+                let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
+                cell.thumbnailImage.kf.setImage(with: posterURL,
+                                                placeholder: UIImage(systemName: "photo")?.withTintColor(.black, renderingMode: .alwaysOriginal))
+            }
+            cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
+            cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
+            cell.ratingLabel.text = String(format: "%.1f", movie.voteAverage ?? 0.0)
+            cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
+            
+            
+//            if let isSelected = isBookmarked(id: movie.id) {
+//                cell.storageButton.isSelected = movie.isBookmarked
+//                cell.storageButton.isEnabled = !movie.isBookmarked
+//                
+//                if movie.isBookmarked == true {
+//                    cell.storageButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
+//                } else {
+//                    cell.storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
+//                }
+//            }
         }
-        cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
-        cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
-        cell.ratingLabel.text = String(format: "%.1f", movie.voteAverage ?? 0.0)
-        cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
-        cell.storageButton.tag = indexPath.row
+       
         return cell
     }
     
@@ -284,6 +320,20 @@ extension HomeTableViewController {
         
         let safariViewController = SFSafariViewController(url: movieURL)
         present(safariViewController, animated: true, completion: nil)
+    }
+    
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+
+        if offsetY > contentHeight - scrollView.frame.size.height {
+            if currentPage < totalPages {
+                currentPage += 1
+                if let query = query {
+                    searchMovies(query: query)
+                }
+            }
+        }
     }
 }
 
@@ -313,6 +363,8 @@ extension HomeTableViewController: UISearchBarDelegate {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: searchTask)
 
+        query = searchText
+        stackView.isHidden = true
         self.searchTask = searchTask
     }
     
@@ -320,8 +372,8 @@ extension HomeTableViewController: UISearchBarDelegate {
         searchTask?.cancel()
         guard let searchTerm = searchBar.text, searchTerm.isEmpty == false else { return }
         
-        DispatchQueue.main.async {
-            self.movieTableView.reloadData()
+        DispatchQueue.main.async { [self] in
+            movieTableView.reloadData()
         }
         
         if let text = searchBar.text {
@@ -337,7 +389,7 @@ extension HomeTableViewController: UISearchBarDelegate {
         stackView.isHidden = false
         view.addSubview(stackView)
         
+        movieTableView.reloadData()
         movieTableView.isHidden = true
-        self.movieTableView.reloadData()
     }
 }
