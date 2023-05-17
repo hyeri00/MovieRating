@@ -12,6 +12,15 @@ import RealmSwift
 
 class HomeTableViewController: UITableViewController {
     
+    private let movieRepository: MovieRepository! = MovieRepository.shared
+    private var query: String?
+    private var movies = [Movie]()
+    private var currentPage = 1
+    private var totalPages = 1
+    private var searchTask: DispatchWorkItem?
+    private let toast = ToastMessage()
+    private var allMovies = [Movie]()
+    
     private var emptyImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "search")?.withTintColor(.black, renderingMode: .alwaysOriginal)
@@ -64,13 +73,6 @@ class HomeTableViewController: UITableViewController {
     }()
     
     private var realm: Realm!
-    private var query: String?
-    private var movies = [Movie]()
-    private var currentPage = 1
-    private var totalPages = 1
-    private var searchTask: DispatchWorkItem?
-    private let toast = ToastMessage()
-    private var allMovies = [Movie]()
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .darkContent
@@ -146,81 +148,49 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func searchMovies(query: String) {
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = "api.themoviedb.org"
-        urlComponents.path = "/3/search/movie"
-        urlComponents.queryItems = [
-            URLQueryItem(name: "api_key", value: "73861d304f91be437d4465b52141a39b"),
-            URLQueryItem(name: "query", value: query),
-            URLQueryItem(name: "language", value: "ko-KR"),
-            URLQueryItem(name: "page", value: "\(currentPage)")
-        ]
-        
-        guard let url = urlComponents.url else {
-            print("유효하지 않은 URL: \(urlComponents.debugDescription)")
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, error == nil else {
-                print(error?.localizedDescription ?? "Unknown error")
-                return
-            }
-            do {
-                let decoder = JSONDecoder()
-                let response = try decoder.decode(Response.self, from: data)
-                let newMovies = response.results
-                let totalResults = response.totalResults
+        movieRepository.getMovieList(
+            query: query,
+            page: "\(currentPage)"
+        ) { response in
+            let newMovies = response.results
+            let totalResults = response.totalResults
 
-                self.totalPages = response.totalPages
-                self.allMovies += newMovies
+            self.totalPages = response.totalPages
 
-                DispatchQueue.main.async { [self] in
-                    movies = []
-                    
-                    if currentPage == 1 {
-                        movies = newMovies
-                    } else {
-                        let lastRowIndex = movies.count - 1
-                        var indexPaths = [IndexPath]()
-                        for (index, movie) in newMovies.enumerated() {
-                            let indexPath = IndexPath(row: lastRowIndex + index + 1, section: 0)
-                            movies.append(movie)
-                            indexPaths.append(indexPath)
-                        }
-                        movieTableView.insertRows(at: indexPaths, with: .fade)
+            DispatchQueue.main.async { [self] in
+                if self.currentPage == 1 {
+                    self.allMovies = newMovies
+                    self.movies = self.allMovies.map { $0 }
+                    self.movieTableView.reloadData()
+                } else {
+                    let lastRowIndex = self.movies.count - 1
+                    var indexPaths = [IndexPath]()
+                    for (index, movie) in newMovies.enumerated() {
+                        let indexPath = IndexPath(row: lastRowIndex + index + 1, section: 0)
+                        self.movies.append(movie)
+                        indexPaths.append(indexPath)
                     }
-
-                    if movies.isEmpty {
-                        stackView.isHidden = true
-                        emptySearchLabel.isHidden = false
-                    } else {
-                        stackView.isHidden = true
-                        emptySearchLabel.isHidden = true
-                    }
-                    setTotalCountLabel(totalResults)
-                    movieTableView.reloadData()
+                    self.movieTableView.insertRows(at: indexPaths, with: .automatic)
                 }
 
-            } catch {
-                print(error.localizedDescription)
+                self.setTotalCountLabel(totalResults)
+
+                if newMovies.isEmpty {
+                    self.movieTableView.isHidden = true
+                    self.stackView.isHidden = true
+                    self.emptySearchLabel.isHidden = false
+                } else {
+                    self.movieTableView.isHidden = false
+                    self.stackView.isHidden = true
+                    self.emptySearchLabel.isHidden = true
+                }
+
+                self.currentPage += 1
+                print("movie 배열", self.movies)
             }
         }
-        
-        DispatchQueue.main.async { [self] in
-            movieTableView.reloadData()
-            movieTableView.isHidden = false
-            totalCountLabel.isHidden = false
-        }
-        
-        task.resume()
-        currentPage += 1
     }
-    
+
     private func getMovieData(at indexPath: IndexPath) -> MovieData? {
         guard let cell = movieTableView.cellForRow(at: indexPath) as? MovieTableViewCell else {
             return nil
@@ -249,27 +219,6 @@ class HomeTableViewController: UITableViewController {
         else {
             return
         }
-
-        do {
-            realm = try Realm()
-            try realm.write {
-                movie.isBookmarked = true
-                sender.isSelected = true
-
-                sender.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
-                sender.tintColor = .black
-
-                toast.showToast(image: UIImage(named: "check-circle")!,
-                                message: "보관함에 저장되었습니다.")
-
-                sender.isEnabled = false
-                movie.isBookmarked = sender.isEnabled
-                realm.add(movie)
-            }
-            movieTableView.deselectRow(at: indexPath, animated: true)
-        } catch let error as NSError {
-            print("Error: \(error.localizedDescription)")
-        }
     }
 }
 
@@ -290,26 +239,14 @@ extension HomeTableViewController {
             if let posterPath = movie.posterPath {
                 let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
                 cell.thumbnailImage.kf.setImage(with: posterURL,
-                                                placeholder: UIImage(systemName: "photo")?.withTintColor(.black, renderingMode: .alwaysOriginal))
+                                                placeholder: UIImage(systemName: "photo")?.withTintColor(.black,
+                                                                                                         renderingMode: .alwaysOriginal))
             }
             cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
             cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
             cell.ratingLabel.text = String(format: "%.1f", movie.voteAverage ?? 0.0)
             cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
-            
-            
-//            if let isSelected = isBookmarked(id: movie.id) {
-//                cell.storageButton.isSelected = movie.isBookmarked
-//                cell.storageButton.isEnabled = !movie.isBookmarked
-//                
-//                if movie.isBookmarked == true {
-//                    cell.storageButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
-//                } else {
-//                    cell.storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
-//                }
-//            }
         }
-       
         return cell
     }
     
@@ -340,24 +277,24 @@ extension HomeTableViewController {
 extension HomeTableViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        for cell in movieTableView.visibleCells {
-            if let cell = cell as? MovieTableViewCell {
-                cell.storageButton.isSelected = false
-                cell.storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
-                cell.storageButton.tintColor = .black
-            }
-        }
+        // 이전 검색 결과 초기화
+        movies = []
+        movieTableView.reloadData()
+
         searchTask?.cancel()
 
         let searchTask = DispatchWorkItem { [weak self] in
-            self?.searchMovies(query: searchText)
-            DispatchQueue.main.async {
-                if self?.movies.isEmpty == true {
-                    self?.emptySearchLabel.isHidden = false
-                } else {
+            if searchText.isEmpty {
+                DispatchQueue.main.async {
+                    self?.stackView.isHidden = false
                     self?.emptySearchLabel.isHidden = true
+                    self?.movieTableView.reloadData()
                 }
-                self?.movieTableView.reloadData()
+            } else {
+                self?.searchMovies(query: searchText)
+                DispatchQueue.main.async {
+                    self?.movieTableView.reloadData()
+                }
             }
         }
 
@@ -367,23 +304,28 @@ extension HomeTableViewController: UISearchBarDelegate {
         stackView.isHidden = true
         self.searchTask = searchTask
     }
-    
+
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchTask?.cancel()
-        guard let searchTerm = searchBar.text, searchTerm.isEmpty == false else { return }
-        
+        guard let searchTerm = searchBar.text, searchTerm.isEmpty == false else {
+            searchMovies(query: "")
+            return
+        }
+
         DispatchQueue.main.async { [self] in
             movieTableView.reloadData()
         }
-        
+
+        self.movies = []
+
         if let text = searchBar.text {
             query = text
-            
             searchMovies(query: query!)
         }
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        print(#function)
         totalCountLabel.isHidden = true
         
         stackView.isHidden = false

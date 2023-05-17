@@ -7,9 +7,10 @@
 
 import UIKit
 import SafariServices
-import RealmSwift
 
 class MovieDetailViewController: UIViewController {
+    
+    private let movieRepository: MovieRepository! = MovieRepository.shared
     
     private let backgroundView: UIView = {
         let view = UIView()
@@ -110,7 +111,6 @@ class MovieDetailViewController: UIViewController {
     
     var moviesData: MovieData?
     weak var delegate: MovieDetailDelegate?
-    private var realm: Realm!
     private let toast = ToastMessage()
     private var detailViewTopConstraint: NSLayoutConstraint!
     
@@ -146,12 +146,6 @@ class MovieDetailViewController: UIViewController {
     }
     
     private func getMovies() {
-        do {
-            realm = try Realm()
-        } catch let error as NSError {
-            print("Failed to open Realm: \(error.localizedDescription)")
-        }
-        
         if let movie = moviesData {
             if let imageData = movie.thumbnailImageData {
                 let image = UIImage(data: imageData)
@@ -285,16 +279,13 @@ class MovieDetailViewController: UIViewController {
             guard let movie = self.moviesData else {
                 return
             }
-            do {
-                let realm = try Realm()
-                try realm.write {
-                    realm.delete(movie)
+            
+            movieRepository.deleteStorageMovie(movie: movie) { isSuccess in
+                if isSuccess {
                     self.dismiss(animated: false)
+                    delegate?.updateCollectionView()
+                    self.navigationController?.popViewController(animated: true)
                 }
-                delegate?.updateCollectionView()
-                self.navigationController?.popViewController(animated: true)
-            } catch {
-                print("Failed to delete movie: \(error.localizedDescription)")
             }
         }
 

@@ -10,6 +10,8 @@ import RealmSwift
 
 class StorageViewController: UIViewController {
     
+    private let movieRepository: MovieRepository! = MovieRepository.shared
+    
     let emptyLabel: UILabel = {
         let label = UILabel()
         label.text = "보관함 비어있음."
@@ -35,7 +37,6 @@ class StorageViewController: UIViewController {
     
     private var realm: Realm!
     private var moviesData: Results<MovieData>!
-    private var notificationToken: NotificationToken?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,6 +48,12 @@ class StorageViewController: UIViewController {
         setNavigationBar()
         setCollectionView()
         setConstraints()
+        
+        do {
+            realm = try Realm()
+        } catch let error as NSError {
+            print("Error: \(error.localizedDescription)")
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -66,9 +73,8 @@ class StorageViewController: UIViewController {
     }
     
     private func getMovies() {
-        do {
-            realm = try Realm()
-            moviesData = realm.objects(MovieData.self)
+        movieRepository.getStorageMovieList { movies in
+            moviesData = movies
             
             if moviesData.isEmpty {
                 self.emptyLabel.isHidden = false
@@ -77,8 +83,6 @@ class StorageViewController: UIViewController {
             }
             
             movieCollectionView.reloadData()
-        } catch let error as NSError {
-            print("Error: \(error.localizedDescription)")
         }
     }
     
@@ -123,15 +127,10 @@ class StorageViewController: UIViewController {
         }
         let movie = moviesData[cellIndex.item]
 
-        do {
-            let realm = try Realm()
-            try realm.write {
-                movie.userRate = rate
-            }
-        } catch let error as NSError {
-            print("Error updating movie userRate: \(error.localizedDescription)")
+        movieRepository.updateEvaluation(movie: movie, changedRating: rate) { isSuccess in
+            
         }
-
+        
         selectedCell.evaluationLabel.text = "평가 함 ⭐️ \(rate)"
         selectedCell.evaluationLabel.textColor = .black
 
