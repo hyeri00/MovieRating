@@ -10,6 +10,10 @@ import SafariServices
 
 class MovieDetailViewController: UIViewController {
     
+    var moviesData: MovieData?
+    weak var delegate: MovieDetailDelegate?
+    private let toast = ToastMessage()
+    private var detailViewTopConstraint: NSLayoutConstraint!
     private let movieRepository: MovieRepository! = MovieRepository.shared
     
     private let backgroundView: UIView = {
@@ -108,11 +112,6 @@ class MovieDetailViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
-    var moviesData: MovieData?
-    weak var delegate: MovieDetailDelegate?
-    private let toast = ToastMessage()
-    private var detailViewTopConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -274,7 +273,7 @@ class MovieDetailViewController: UIViewController {
         let cancel = UIAlertAction(title: "취소", style: .cancel)
         let action = UIAlertAction(title: "확인", style: .default) { [self] _ in
             self.toast.showToast(image: UIImage(named: "trash")!,
-                            message: "삭제가 완료됐습니다.")
+                            message: "삭제 완료")
 
             guard let movie = self.moviesData else {
                 return

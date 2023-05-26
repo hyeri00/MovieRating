@@ -20,6 +20,7 @@ class HomeTableViewController: UITableViewController {
     private var searchTask: DispatchWorkItem?
     private let toast = ToastMessage()
     private var allMovies = [Movie]()
+    var bookmarkedMovieIDs = Set<String>()
     
     private var emptyImage: UIImageView = {
         let imageView = UIImageView()
@@ -158,35 +159,34 @@ class HomeTableViewController: UITableViewController {
             self.totalPages = response.totalPages
 
             DispatchQueue.main.async { [self] in
-                if self.currentPage == 1 {
-                    self.allMovies = newMovies
-                    self.movies = self.allMovies.map { $0 }
-                    self.movieTableView.reloadData()
+                if currentPage == 1 {
+                    allMovies = newMovies
+                    movies = allMovies.map { $0 }
+                    movieTableView.reloadData()
                 } else {
                     let lastRowIndex = self.movies.count - 1
                     var indexPaths = [IndexPath]()
                     for (index, movie) in newMovies.enumerated() {
                         let indexPath = IndexPath(row: lastRowIndex + index + 1, section: 0)
-                        self.movies.append(movie)
+                        movies.append(movie)
                         indexPaths.append(indexPath)
                     }
-                    self.movieTableView.insertRows(at: indexPaths, with: .automatic)
+                    movieTableView.insertRows(at: indexPaths, with: .automatic)
                 }
 
-                self.setTotalCountLabel(totalResults)
+                setTotalCountLabel(totalResults)
 
                 if newMovies.isEmpty {
-                    self.movieTableView.isHidden = true
-                    self.stackView.isHidden = true
-                    self.emptySearchLabel.isHidden = false
+                    movieTableView.isHidden = true
+                    stackView.isHidden = true
+                    emptySearchLabel.isHidden = false
                 } else {
-                    self.movieTableView.isHidden = false
-                    self.stackView.isHidden = true
-                    self.emptySearchLabel.isHidden = true
+                    movieTableView.isHidden = false
+                    stackView.isHidden = true
+                    emptySearchLabel.isHidden = true
                 }
 
-                self.currentPage += 1
-                print("movie 배열", self.movies)
+                currentPage += 1
             }
         }
     }
@@ -197,6 +197,7 @@ class HomeTableViewController: UITableViewController {
         }
 
         let movie = MovieData()
+        movie.id = String(movies[indexPath.row].id)
         movie.thumbnailImageData = cell.thumbnailImage.image?.pngData()
         movie.title = cell.titleAndYearLabel.text ?? ""
         movie.genre = cell.genreLabel.text ?? ""
@@ -212,13 +213,42 @@ class HomeTableViewController: UITableViewController {
     }
     
     @objc private func storageButtonTapped(_ sender: UIButton) {
-        print(#function)
         guard let cell = sender.superview?.superview as? MovieTableViewCell,
               let indexPath = movieTableView.indexPath(for: cell),
               let movie = getMovieData(at: indexPath)
         else {
             return
         }
+        
+        let movieID = movie.id
+        do {
+            realm = try Realm()
+            try realm.write {
+                if let storedMovie = realm.object(ofType: MovieData.self, forPrimaryKey: movieID) {
+                    print("아이디", movieID)
+                    realm.delete(storedMovie)
+                    
+                    sender.isSelected = false
+                    movie.isBookmarked = false
+                    
+                    sender.setImage(UIImage(systemName: "bookmark"), for: .normal)
+                    toast.showToast(image: UIImage(named: "check-circle")!,
+                                    message: "삭제 완료")
+                } else {
+                    realm.add(movie)
+                    
+                    sender.isSelected = true
+                    movie.isBookmarked = true
+                    
+                    sender.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
+                    toast.showToast(image: UIImage(named: "check-circle")!,
+                                    message: "보관함에 저장 완료")
+                }
+            }
+        } catch let error as NSError {
+            print("Error: \(error.localizedDescription)")
+        }
+        print("저장 된 영화 :", movie)
     }
 }
 
@@ -234,19 +264,20 @@ extension HomeTableViewController {
         
         guard indexPath.row < movies.count else { return cell }
         
-        DispatchQueue.main.async { [self] in
-            let movie = movies[indexPath.row]
-            if let posterPath = movie.posterPath {
-                let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
-                cell.thumbnailImage.kf.setImage(with: posterURL,
-                                                placeholder: UIImage(systemName: "photo")?.withTintColor(.black,
-                                                                                                         renderingMode: .alwaysOriginal))
-            }
-            cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
-            cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
-            cell.ratingLabel.text = String(format: "%.1f", movie.voteAverage ?? 0.0)
-            cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
+        let movie = movies[indexPath.row]
+        if let posterPath = movie.posterPath {
+            let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
+            cell.thumbnailImage.kf.setImage(with: posterURL,
+                                            placeholder: UIImage(systemName: "photo")?.withTintColor(.black, renderingMode: .alwaysOriginal))
         }
+        
+        cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
+        cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
+        cell.ratingLabel.text = String(format: "%.1f", movie.voteAverage ?? 0.0)
+        
+        cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
+        cell.storageButton.tag = indexPath.row
+        
         return cell
     }
     
@@ -277,7 +308,7 @@ extension HomeTableViewController {
 extension HomeTableViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        // 이전 검색 결과 초기화
+        currentPage = 1
         movies = []
         movieTableView.reloadData()
 
@@ -315,8 +346,8 @@ extension HomeTableViewController: UISearchBarDelegate {
         DispatchQueue.main.async { [self] in
             movieTableView.reloadData()
         }
-
-        self.movies = []
+        currentPage = 1
+        movies = []
 
         if let text = searchBar.text {
             query = text

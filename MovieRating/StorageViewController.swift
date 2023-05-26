@@ -83,6 +83,7 @@ class StorageViewController: UIViewController {
             }
             
             movieCollectionView.reloadData()
+            print("보관된 영화: ", moviesData)
         }
     }
     
