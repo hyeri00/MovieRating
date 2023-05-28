@@ -19,8 +19,6 @@ class HomeTableViewController: UITableViewController {
     private var totalPages = 1
     private var searchTask: DispatchWorkItem?
     private let toast = ToastMessage()
-    private var allMovies = [Movie]()
-    var bookmarkedMovieIDs = Set<String>()
     
     private var emptyImage: UIImageView = {
         let imageView = UIImageView()
@@ -155,6 +153,7 @@ class HomeTableViewController: UITableViewController {
         ) { response in
             let newMovies = response.results
             let totalResults = response.totalResults
+            var allMovies = [Movie]()
 
             self.totalPages = response.totalPages
 
@@ -277,6 +276,18 @@ extension HomeTableViewController {
         
         cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
         cell.storageButton.tag = indexPath.row
+        
+        let realm = try! Realm()
+        let movieID = String(movie.id)
+        let isBookmarked = realm.object(ofType: MovieData.self, forPrimaryKey: movieID) != nil
+
+        if isBookmarked {
+            cell.storageButton.isSelected = true
+            cell.storageButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
+        } else {
+            cell.storageButton.isSelected = false
+            cell.storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        }
         
         return cell
     }
