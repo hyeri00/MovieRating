@@ -88,7 +88,7 @@ class MovieDetailViewController: UIViewController {
     }()
     
     private let rateLabel: UILabel = {
-       let label = UILabel()
+        let label = UILabel()
         label.text = "영화 평가하기"
         label.textColor = .black
         label.font = .boldSystemFont(ofSize: 14)
@@ -250,11 +250,16 @@ class MovieDetailViewController: UIViewController {
     }
     
     @objc private func goMovieDeatilSite() {
+        guard let movie = moviesData,
+              let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)") else {
+            return
+        }
+        
+        let safariViewController = SFSafariViewController(url: movieURL)
+        present(safariViewController, animated: true, completion: nil)
     }
     
-    @objc private func changeRate() {
-        print(#function)
-        
+    @objc private func changeRate() {        
         let rate = CGFloat(rateView.currentStar)
         print("Rating changed to: \(rate)")
         let userInfo = ["rate": rate]

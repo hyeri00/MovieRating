@@ -74,7 +74,7 @@ class HomeTableViewController: UITableViewController {
     private var realm: Realm!
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .darkContent
+        return .lightContent
     }
     
     override func viewDidLoad() {
@@ -87,13 +87,13 @@ class HomeTableViewController: UITableViewController {
         setConstraints()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        if let searchText = query {
-            navigationItem.searchController?.searchBar.text = searchText
-        }
-    }
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        
+//        if let searchText = query {
+//            navigationItem.searchController?.searchBar.text = searchText
+//        }
+//    }
     
     private func setup() {
         view.backgroundColor = .white
@@ -179,10 +179,12 @@ class HomeTableViewController: UITableViewController {
                     movieTableView.isHidden = true
                     stackView.isHidden = true
                     emptySearchLabel.isHidden = false
+                    totalCountLabel.isHidden = true
                 } else {
                     movieTableView.isHidden = false
                     stackView.isHidden = true
                     emptySearchLabel.isHidden = true
+                    totalCountLabel.isHidden = false
                 }
 
                 currentPage += 1
@@ -224,7 +226,6 @@ class HomeTableViewController: UITableViewController {
             realm = try Realm()
             try realm.write {
                 if let storedMovie = realm.object(ofType: MovieData.self, forPrimaryKey: movieID) {
-                    print("아이디", movieID)
                     realm.delete(storedMovie)
                     
                     sender.isSelected = false
@@ -247,7 +248,6 @@ class HomeTableViewController: UITableViewController {
         } catch let error as NSError {
             print("Error: \(error.localizedDescription)")
         }
-        print("저장 된 영화 :", movie)
     }
 }
 
@@ -369,11 +369,24 @@ extension HomeTableViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         print(#function)
         totalCountLabel.isHidden = true
-        
+
         stackView.isHidden = false
         view.addSubview(stackView)
-        
-        movieTableView.reloadData()
+
         movieTableView.isHidden = true
     }
+    
+//    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+//
+//        totalCountLabel.isHidden = true
+//        movieTableView.isHidden = true
+//
+//        stackView.isHidden = false
+//
+////        stackView.isHidden = false
+////        view.bringSubviewToFront(stackView)
+//
+////        searchBar.text = nil
+////        searchBar.resignFirstResponder()
+//    }
 }

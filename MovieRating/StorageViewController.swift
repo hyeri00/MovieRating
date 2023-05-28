@@ -83,7 +83,6 @@ class StorageViewController: UIViewController {
             }
             
             movieCollectionView.reloadData()
-            print("보관된 영화: ", moviesData)
         }
     }
     
@@ -136,10 +135,6 @@ class StorageViewController: UIViewController {
         selectedCell.evaluationLabel.textColor = .black
 
         print("userInfo: \(userInfo)")
-    }
-
-    @objc private func showMovieCollectionViewCellChooseDelete() {
-        
     }
 }
 
