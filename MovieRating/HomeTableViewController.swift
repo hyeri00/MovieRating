@@ -9,6 +9,7 @@ import UIKit
 import Kingfisher
 import SafariServices
 import RealmSwift
+import Combine
 
 class HomeTableViewController: UITableViewController {
     
@@ -89,7 +90,7 @@ class HomeTableViewController: UITableViewController {
     
 //    override func viewWillAppear(_ animated: Bool) {
 //        super.viewWillAppear(animated)
-//        
+//
 //        if let searchText = query {
 //            navigationItem.searchController?.searchBar.text = searchText
 //        }
@@ -270,8 +271,18 @@ extension HomeTableViewController {
                                             placeholder: UIImage(systemName: "photo")?.withTintColor(.black, renderingMode: .alwaysOriginal))
         }
         
-        cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
-        cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
+        if movie.year.isEmpty {
+            cell.titleAndYearLabel.text = "\(movie.title)"
+        } else {
+            cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
+        }
+
+        if movie.genres.isEmpty {
+            cell.genreLabel.text = "정보 없음"
+        } else {
+            cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
+        }
+        
         cell.ratingLabel.text = String(format: "%.1f", movie.voteAverage ?? 0.0)
         
         cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
@@ -369,24 +380,9 @@ extension HomeTableViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         print(#function)
         totalCountLabel.isHidden = true
+        movieTableView.isHidden = true
 
         stackView.isHidden = false
         view.addSubview(stackView)
-
-        movieTableView.isHidden = true
     }
-    
-//    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-//
-//        totalCountLabel.isHidden = true
-//        movieTableView.isHidden = true
-//
-//        stackView.isHidden = false
-//
-////        stackView.isHidden = false
-////        view.bringSubviewToFront(stackView)
-//
-////        searchBar.text = nil
-////        searchBar.resignFirstResponder()
-//    }
 }
