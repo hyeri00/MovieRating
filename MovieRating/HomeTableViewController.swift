@@ -9,7 +9,6 @@ import UIKit
 import Kingfisher
 import SafariServices
 import RealmSwift
-import Combine
 
 class HomeTableViewController: UITableViewController {
     
@@ -88,23 +87,15 @@ class HomeTableViewController: UITableViewController {
         setConstraints()
     }
     
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//
-//        if let searchText = query {
-//            navigationItem.searchController?.searchBar.text = searchText
-//        }
-//    }
-    
     private func setup() {
         view.backgroundColor = .white
     }
     
     private func addViews() {
-        movieTableView.addSubview(stackView)
         view.addSubview(totalCountLabel)
         view.addSubview(movieTableView)
-        movieTableView.addSubview(emptySearchLabel)
+        view.addSubview(stackView)
+        view.addSubview(emptySearchLabel)
     }
     
     private func setTableView() {
@@ -148,6 +139,18 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func searchMovies(query: String) {
+        if query.isEmpty {
+            emptySearchLabel.isHidden = true
+            stackView.isHidden = false
+            totalCountLabel.isHidden = true
+            
+            movies = []
+            movieTableView.reloadData()
+//            movieTableView.isHidden = true
+            
+            return
+        }
+            
         movieRepository.getMovieList(
             query: query,
             page: "\(currentPage)"
@@ -155,9 +158,9 @@ class HomeTableViewController: UITableViewController {
             let newMovies = response.results
             let totalResults = response.totalResults
             var allMovies = [Movie]()
-
+            
             self.totalPages = response.totalPages
-
+            
             DispatchQueue.main.async { [self] in
                 if currentPage == 1 {
                     allMovies = newMovies
@@ -173,20 +176,14 @@ class HomeTableViewController: UITableViewController {
                     }
                     movieTableView.insertRows(at: indexPaths, with: .automatic)
                 }
-
+                
                 setTotalCountLabel(totalResults)
-
-                if newMovies.isEmpty {
-                    movieTableView.isHidden = true
-                    stackView.isHidden = true
-                    emptySearchLabel.isHidden = false
-                    totalCountLabel.isHidden = true
-                } else {
-                    movieTableView.isHidden = false
-                    stackView.isHidden = true
-                    emptySearchLabel.isHidden = true
-                    totalCountLabel.isHidden = false
-                }
+                
+                let isMovieNotEmpty = !newMovies.isEmpty
+                emptySearchLabel.isHidden = isMovieNotEmpty
+                stackView.isHidden = isMovieNotEmpty || !query.isEmpty
+                totalCountLabel.isHidden = !isMovieNotEmpty
+//                movieTableView.isHidden = !isMovieNotEmpty
 
                 currentPage += 1
             }
@@ -320,6 +317,7 @@ extension HomeTableViewController {
             if currentPage < totalPages {
                 currentPage += 1
                 if let query = query {
+                    print("test123 \(query)")
                     searchMovies(query: query)
                 }
             }
@@ -378,11 +376,9 @@ extension HomeTableViewController: UISearchBarDelegate {
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        query = ""
+        
         print(#function)
-        totalCountLabel.isHidden = true
-        movieTableView.isHidden = true
-
-        stackView.isHidden = false
-        view.addSubview(stackView)
     }
 }
