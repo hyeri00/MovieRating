@@ -12,11 +12,8 @@ import RealmSwift
 
 class HomeTableViewController: UITableViewController {
     
-    private let movieRepository: MovieRepository! = MovieRepository.shared
-    private var query: String?
-    private var movies = [Movie]()
-    private var currentPage = 1
-    private var totalPages = 1
+    private let homeViewModel: HomeViewModel! = HomeViewModel()
+
     private var searchTask: DispatchWorkItem?
     private let toast = ToastMessage()
     
@@ -81,6 +78,7 @@ class HomeTableViewController: UITableViewController {
         super.viewDidLoad()
         
         setup()
+        setupViewModel()
         addViews()
         setTableView()
         setNavigationBar()
@@ -89,6 +87,24 @@ class HomeTableViewController: UITableViewController {
     
     private func setup() {
         view.backgroundColor = .white
+    }
+    
+    private func setupViewModel() {
+        homeViewModel.movieSearchResult.bind { result in
+            print("movies \(result.movies.count) \(result.totalCount)")
+            
+            if !result.indexPaths.isEmpty {
+                self.movieTableView.insertRows(at: result.indexPaths, with: .automatic)
+            } else {
+                self.movieTableView.reloadData()
+            }
+            self.setTotalCountLabel(result.totalCount)
+            
+            let isMovieNotEmpty = !result.movies.isEmpty
+            self.emptySearchLabel.isHidden = isMovieNotEmpty
+            self.stackView.isHidden = isMovieNotEmpty || !self.homeViewModel.query.isEmpty
+            self.totalCountLabel.isHidden = !isMovieNotEmpty
+        }
     }
     
     private func addViews() {
@@ -144,50 +160,12 @@ class HomeTableViewController: UITableViewController {
             stackView.isHidden = false
             totalCountLabel.isHidden = true
             
-            movies = []
+            homeViewModel.resetPages()
             movieTableView.reloadData()
-//            movieTableView.isHidden = true
-            
             return
         }
             
-        movieRepository.getMovieList(
-            query: query,
-            page: "\(currentPage)"
-        ) { response in
-            let newMovies = response.results
-            let totalResults = response.totalResults
-            var allMovies = [Movie]()
-            
-            self.totalPages = response.totalPages
-            
-            DispatchQueue.main.async { [self] in
-                if currentPage == 1 {
-                    allMovies = newMovies
-                    movies = allMovies.map { $0 }
-                    movieTableView.reloadData()
-                } else {
-                    let lastRowIndex = self.movies.count - 1
-                    var indexPaths = [IndexPath]()
-                    for (index, movie) in newMovies.enumerated() {
-                        let indexPath = IndexPath(row: lastRowIndex + index + 1, section: 0)
-                        movies.append(movie)
-                        indexPaths.append(indexPath)
-                    }
-                    movieTableView.insertRows(at: indexPaths, with: .automatic)
-                }
-                
-                setTotalCountLabel(totalResults)
-                
-                let isMovieNotEmpty = !newMovies.isEmpty
-                emptySearchLabel.isHidden = isMovieNotEmpty
-                stackView.isHidden = isMovieNotEmpty || !query.isEmpty
-                totalCountLabel.isHidden = !isMovieNotEmpty
-//                movieTableView.isHidden = !isMovieNotEmpty
-
-                currentPage += 1
-            }
-        }
+        homeViewModel.search(query: query)
     }
 
     private func getMovieData(at indexPath: IndexPath) -> MovieData? {
@@ -196,7 +174,7 @@ class HomeTableViewController: UITableViewController {
         }
 
         let movie = MovieData()
-        movie.id = String(movies[indexPath.row].id)
+        movie.id = "1" // String(movies[indexPath.row].id)
         movie.thumbnailImageData = cell.thumbnailImage.image?.pngData()
         movie.title = cell.titleAndYearLabel.text ?? ""
         movie.genre = cell.genreLabel.text ?? ""
@@ -253,11 +231,13 @@ class HomeTableViewController: UITableViewController {
 extension HomeTableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return movies.count
+        return homeViewModel.movieSearchResult.value.movies.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieTableViewCell", for: indexPath) as! MovieTableViewCell
+        
+        let movies = homeViewModel.movieSearchResult.value.movies
         
         guard indexPath.row < movies.count else { return cell }
         
@@ -302,7 +282,7 @@ extension HomeTableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        let movie = movies[indexPath.row]
+        let movie = homeViewModel.movieSearchResult.value.movies[indexPath.row]
         let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)")!
         
         let safariViewController = SFSafariViewController(url: movieURL)
@@ -314,13 +294,7 @@ extension HomeTableViewController {
         let contentHeight = scrollView.contentSize.height
 
         if offsetY > contentHeight - scrollView.frame.size.height {
-            if currentPage < totalPages {
-                currentPage += 1
-                if let query = query {
-                    print("test123 \(query)")
-                    searchMovies(query: query)
-                }
-            }
+            homeViewModel.loadNextPage()
         }
     }
 }
@@ -328,8 +302,7 @@ extension HomeTableViewController {
 extension HomeTableViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        currentPage = 1
-        movies = []
+        homeViewModel.resetPages()
         movieTableView.reloadData()
 
         searchTask?.cancel()
@@ -351,7 +324,6 @@ extension HomeTableViewController: UISearchBarDelegate {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: searchTask)
 
-        query = searchText
         stackView.isHidden = true
         self.searchTask = searchTask
     }
@@ -366,18 +338,16 @@ extension HomeTableViewController: UISearchBarDelegate {
         DispatchQueue.main.async { [self] in
             movieTableView.reloadData()
         }
-        currentPage = 1
-        movies = []
+        homeViewModel.resetPages()
 
         if let text = searchBar.text {
-            query = text
-            searchMovies(query: query!)
+            searchMovies(query: searchBar.text!)
         }
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
-        query = ""
+        homeViewModel.clear()
         
         print(#function)
     }

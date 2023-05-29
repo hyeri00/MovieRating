@@ -21,7 +21,6 @@ class MovieRepository {
         localDataSource = MovieLocalDataSource.shared
     }
     
-    
     func getMovieList(query: String, page: String, callback: @escaping (Response) -> Void) {
         remoteDataSource.getMovieList(query: query, page: page, callback: callback)
     }
