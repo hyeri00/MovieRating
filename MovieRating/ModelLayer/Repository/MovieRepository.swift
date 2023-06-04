@@ -21,16 +21,36 @@ class MovieRepository {
         localDataSource = MovieLocalDataSource.shared
     }
     
-    func getStorageMovie(id: Int) -> Movie? {
+    private func getStorageMovie(id: Int) -> Movie? {
         return localDataSource.getStorageMovie(movieId: id)?.toDto()
     }
     
-    func getMovieList(query: String, page: String, callback: @escaping (Response) -> Void) {
-        remoteDataSource.getMovieList(query: query, page: page, callback: callback)
+    func getMovieList(query: String, page: String, callback: @escaping (MovieSearchResponse) -> Void) {
+        remoteDataSource.getMovieList(query: query, page: page, callback: { response in
+            callback(self.makeMovieSearchResponse(response: response))
+        })
     }
     
-    func getStorageMovieList(callback: (Results<MovieData>) -> Void) {
-        localDataSource.getStorageMovieList(callback: callback)
+    private func makeMovieSearchResponse(response: Response) -> MovieSearchResponse {
+        let newMovies = response.results.map {
+            if let storageMovie = self.getStorageMovie(id: $0.id) {
+                return $0.toDto(userRate: storageMovie.userRate, isBookmarked: storageMovie.isBookmarked)
+            } else {
+                return $0.toDto(userRate: 0, isBookmarked: false)
+            }
+        }
+        
+        let totalResults = response.totalResults
+        
+        return MovieSearchResponse(movies: newMovies, totalCount: totalResults, totalPages: response.totalPages)
+    }
+    
+    func getStorageMovieList(callback: ([Movie]) -> Void) {
+        localDataSource.getStorageMovieList(callback: { movieDataList in
+            movieDataList.map { movieData in
+                movieData.toDto()
+            }
+        })
     }
     
     func addStorageMovie(movie: MovieData, callback: (Bool) -> Void) {

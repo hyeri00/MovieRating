@@ -42,35 +42,23 @@ class HomeViewModel {
         movieRepository.getMovieList(
             query: query,
             page: "\(currentPage)"
-        ) { response in
+        ) { result in
             
-            let newMovies = response.results
-            let totalResults = response.totalResults
-            self.totalPages = response.totalPages
+            let newMovies = result.movies
+            let totalResults = result.totalCount
+            self.totalPages = result.totalPages
             
             var indexPaths = [IndexPath]()
             var resultMovies = self.movieSearchResult.value.movies
             
             if self.currentPage == 1 {
-                resultMovies = newMovies.map {
-                    if let storageMovie = self.movieRepository.getStorageMovie(id: $0.id) {
-                        return $0.toDto(userRate: storageMovie.userRate, isBookmarked: storageMovie.isBookmarked)
-                    } else {
-                        return $0.toDto(userRate: 0, isBookmarked: false)
-                    }
-                }
+                resultMovies = newMovies
             } else {
                 let lastRowIndex = self.movieSearchResult.value.movies.count - 1
                 
-                for (index, movieResponse) in newMovies.enumerated() {
+                for (index, movie) in newMovies.enumerated() {
                     let indexPath = IndexPath(row: lastRowIndex + index + 1, section: 0)
-                    
-                    if let storageMovie = self.movieRepository.getStorageMovie(id: movieResponse.id) {
-                        resultMovies.append(movieResponse.toDto(userRate: storageMovie.userRate, isBookmarked: storageMovie.isBookmarked))
-                    } else {
-                        resultMovies.append(movieResponse.toDto(userRate: 0, isBookmarked: false))
-                    }
-                    
+                    resultMovies.append(movie)
                     indexPaths.append(indexPath)
                 }
             }

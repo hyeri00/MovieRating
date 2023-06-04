@@ -21,3 +21,16 @@ class MovieSearchResult {
     
     static let EMPTY = MovieSearchResult(movies: Array(), totalCount: 0, indexPaths: [])
 }
+
+class MovieSearchResponse {
+    
+    let movies: Array<Movie>
+    let totalCount: Int
+    let totalPages: Int
+    
+    init(movies: Array<Movie>, totalCount: Int, totalPages: Int) {
+        self.movies = movies
+        self.totalCount = totalCount
+        self.totalPages = totalPages
+    }
+}
