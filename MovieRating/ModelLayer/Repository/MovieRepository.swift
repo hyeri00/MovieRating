@@ -21,6 +21,10 @@ class MovieRepository {
         localDataSource = MovieLocalDataSource.shared
     }
     
+    func getStorageMovie(id: Int) -> Movie? {
+        return localDataSource.getStorageMovie(movieId: id)?.toDto()
+    }
+    
     func getMovieList(query: String, page: String, callback: @escaping (Response) -> Void) {
         remoteDataSource.getMovieList(query: query, page: page, callback: callback)
     }
@@ -29,8 +33,12 @@ class MovieRepository {
         localDataSource.getStorageMovieList(callback: callback)
     }
     
-    func deleteStorageMovie(movie: MovieData, callback: (Bool) -> Void) {
-        localDataSource.deleteStorageMovie(movie: movie, callback: callback)
+    func addStorageMovie(movie: MovieData, callback: (Bool) -> Void) {
+        localDataSource.addStorageMovie(movieData: movie, callback: callback)
+    }
+    
+    func deleteStorageMovie(movieId: Int, callback: (Bool) -> Void) {
+        localDataSource.deleteStorageMovie(movieId: movieId, callback: callback)
     }
     
     func updateEvaluation(movie: MovieData, changedRating: CGFloat, callback: (Bool) -> Void) {

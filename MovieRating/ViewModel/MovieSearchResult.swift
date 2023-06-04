@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 class MovieSearchResult {
     
     let movies: Array<Movie>
@@ -22,4 +21,3 @@ class MovieSearchResult {
     
     static let EMPTY = MovieSearchResult(movies: Array(), totalCount: 0, indexPaths: [])
 }
-

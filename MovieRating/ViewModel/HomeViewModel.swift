@@ -7,8 +7,6 @@
 
 import Foundation
 
-
-
 class HomeViewModel {
     
     private let movieRepository: MovieRepository! = MovieRepository.shared
@@ -19,6 +17,9 @@ class HomeViewModel {
     
     let movieSearchResult: Observer<MovieSearchResult> = Observer(MovieSearchResult.EMPTY)
     
+    let isBookmarkedMovie: Observer<Movie?> = Observer(nil)
+    
+    let isUnbookmarkedMovie: Observer<Movie?> = Observer(nil)
     
     init() {
         
@@ -51,19 +52,55 @@ class HomeViewModel {
             var resultMovies = self.movieSearchResult.value.movies
             
             if self.currentPage == 1 {
-                resultMovies = newMovies.map { $0 }
+                resultMovies = newMovies.map {
+                    if let storageMovie = self.movieRepository.getStorageMovie(id: $0.id) {
+                        return $0.toDto(userRate: storageMovie.userRate, isBookmarked: storageMovie.isBookmarked)
+                    } else {
+                        return $0.toDto(userRate: 0, isBookmarked: false)
+                    }
+                }
             } else {
                 let lastRowIndex = self.movieSearchResult.value.movies.count - 1
                 
-                for (index, movie) in newMovies.enumerated() {
+                for (index, movieResponse) in newMovies.enumerated() {
                     let indexPath = IndexPath(row: lastRowIndex + index + 1, section: 0)
-                    resultMovies.append(movie)
+                    
+                    if let storageMovie = self.movieRepository.getStorageMovie(id: movieResponse.id) {
+                        resultMovies.append(movieResponse.toDto(userRate: storageMovie.userRate, isBookmarked: storageMovie.isBookmarked))
+                    } else {
+                        resultMovies.append(movieResponse.toDto(userRate: 0, isBookmarked: false))
+                    }
+                    
                     indexPaths.append(indexPath)
                 }
             }
             
             self.movieSearchResult.value = MovieSearchResult(movies: resultMovies, totalCount: totalResults, indexPaths: indexPaths)
             self.currentPage += 1
+        }
+    }
+    
+    func changeBookmark(movieId: Int) {
+        if var movie = movieSearchResult.value.movies.first(where: { movie in movie.id == movieId}) {
+            let isBookmarked = movie.isBookmarked
+            movie.isBookmarked = !isBookmarked
+
+            if (isBookmarked) {
+                movieRepository.deleteStorageMovie(movieId: movieId) { isSucceed in
+                    if (isSucceed) {
+                        isUnbookmarkedMovie.value = movie
+                    }
+                }
+            } else {
+                movieRepository.addStorageMovie(movie: movie.toLocalModel()) { isSucceed in
+                    if (isSucceed) {
+                        isBookmarkedMovie.value = movie
+                    }
+                }
+            }
+            
+        } else {
+            print("not found movie \(movieId)")
         }
     }
     
