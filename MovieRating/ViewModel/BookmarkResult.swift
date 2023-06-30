@@ -9,7 +9,9 @@ import Foundation
 
 class BookmarkResult {
     
-    let movie: Movie
+    let movies: Array<Movie>
+    let totalCount: Int
+    let indexPaths: [IndexPath]
     
     init(movies: Array<Movie>, totalCount: Int, indexPaths: [IndexPath]) {
         self.movies = movies

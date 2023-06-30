@@ -51,9 +51,9 @@ extension Movie {
         movieData.id = id
         movieData.posterPath = posterPath
         movieData.title = title
-        movieData.genreIds = genres.map({ genre in
-            genre.id
-        })
+        movieData.genreIds.append(objectsIn: genres.map({ genre in
+            return genre.id
+        }))
         movieData.voteAverageString = voteAverageString
         movieData.userRate = 0
         movieData.isBookmarked = true
@@ -69,7 +69,7 @@ extension MovieData {
             posterPath: posterPath,
             title: title,
             year: year,
-            genres: makeGenres(genreIds: genreIds),
+            genres: makeGenres(genreIds: Array(genreIds)),
             voteAverageString: voteAverageString,
             userRate: userRate,
             isBookmarked: isBookmarked

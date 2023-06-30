@@ -24,7 +24,7 @@ class HomeTableViewController: UITableViewController {
     
     private var emptyLabel: UILabel = {
         let label = UILabel()
-        label.text = "Search Movies"
+        label.text = Home.emptyState
         label.textColor = .black
         label.font = .boldSystemFont(ofSize: 14)
         return label
@@ -59,7 +59,7 @@ class HomeTableViewController: UITableViewController {
     
     private var emptySearchLabel: UILabel = {
         let label = UILabel()
-        label.text = "검색 결과가 없습니다."
+        label.text = Home.emptySearchState
         label.textColor = .black
         label.font = .systemFont(ofSize: 14)
         label.isHidden = true
@@ -106,14 +106,14 @@ class HomeTableViewController: UITableViewController {
         homeViewModel.isBookmarkedMovie.bind { movie in
             if movie != nil {
                 self.toast.showToast(image: UIImage(named: "check-circle")!,
-                                message: "보관함에 저장 완료")
+                                     message: Toast.saveMessage)
             }
         }
         
         homeViewModel.isUnbookmarkedMovie.bind { movie in
             if movie != nil {
                 self.toast.showToast(image: UIImage(named: "check-circle")!,
-                                message: "삭제 완료")
+                                     message: Toast.deleteMessage)
             }
         }
     }
@@ -138,9 +138,9 @@ class HomeTableViewController: UITableViewController {
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
         
-        navigationItem.title = "홈"
+        navigationItem.title = Home.navigationBarTitle
         navigationItem.searchController = UISearchController(searchResultsController: nil)
-        navigationItem.searchController?.searchBar.placeholder = "검색어를 입력하세요"
+        navigationItem.searchController?.searchBar.placeholder = Home.searchBarPlaceHolder
         navigationItem.searchController?.searchBar.delegate = self
     }
     
@@ -241,7 +241,7 @@ extension HomeTableViewController {
         }
         
         if movie.genres.isEmpty {
-            cell.genreLabel.text = "정보 없음"
+            cell.genreLabel.text = movieInfo.emptyInfo
         } else {
             cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
         }

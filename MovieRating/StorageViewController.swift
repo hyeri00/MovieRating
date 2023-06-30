@@ -14,7 +14,7 @@ class StorageViewController: UIViewController {
     
     let emptyLabel: UILabel = {
         let label = UILabel()
-        label.text = "보관함 비어있음."
+        label.text = Storage.emptyState
         label.textColor = .black
         label.font = .systemFont(ofSize: 14)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -37,6 +37,7 @@ class StorageViewController: UIViewController {
     
     private var realm: Realm!
     private var moviesData: Results<MovieData>!
+    private var moviesInfo: [Movie]! = nil
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,7 +75,7 @@ class StorageViewController: UIViewController {
     
     private func getMovies() {
         movieRepository.getStorageMovieList { movies in
-            moviesData = movies
+            moviesInfo = movies
             
             if moviesData.isEmpty {
                 self.emptyLabel.isHidden = false
@@ -98,7 +99,7 @@ class StorageViewController: UIViewController {
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
         
-        navigationItem.title = "보관함"
+        navigationItem.title = Storage.navigationBarTitle
     }
     
     private func setCollectionView() {
@@ -145,21 +146,26 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("들어온 data count: \(moviesData.count)")
+//        print("들어온 data count: \(moviesData.count)")
         return self.moviesData?.count ?? 0
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
         let movie = moviesData[indexPath.item]
-        cell.thumbnailImage.image = UIImage(data: movie.thumbnailImageData ?? Data())
+        if let posterPath = movie.posterPath,
+              let imageData = Data(base64Encoded: posterPath) {
+               cell.thumbnailImage.image = UIImage(data: imageData)
+           } else {
+               cell.thumbnailImage.image = UIImage(named: "placeholderImage")
+           }
         cell.titleLabel.text = "\(movie.title)"
         
         if movie.userRate > 0 {
-            cell.evaluationLabel.text = "평가 함 ⭐️ \(movie.userRate)"
+            cell.evaluationLabel.text = "\(Storage.evaluationState) \(movie.userRate)"
             cell.evaluationLabel.textColor = .black
         } else {
-            cell.evaluationLabel.text = "평가 안 함 ⭐️ 0.0"
+            cell.evaluationLabel.text = Storage.unevaluationState
             cell.evaluationLabel.textColor = .lightGray
         }
         return cell

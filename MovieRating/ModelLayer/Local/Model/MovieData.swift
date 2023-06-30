@@ -12,10 +12,11 @@ class MovieData: Object {
     @objc dynamic var posterPath: String?
     @objc dynamic var title: String = ""
     @objc dynamic var year: String = ""
-    @objc dynamic var genreIds: [Int] = []
     @objc dynamic var voteAverageString: String = ""
     @objc dynamic var userRate: Double = 0
     @objc dynamic var isBookmarked = false
+    
+    var genreIds = List<Int>()
         
     override static func primaryKey() -> String? {
         return "id"
