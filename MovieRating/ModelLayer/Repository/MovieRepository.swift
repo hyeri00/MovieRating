@@ -21,7 +21,7 @@ class MovieRepository {
         localDataSource = MovieLocalDataSource.shared
     }
     
-    private func getStorageMovie(id: Int) -> Movie? {
+    func getStorageMovie(id: Int) -> Movie? {
         return localDataSource.getStorageMovie(movieId: id)?.toDto()
     }
     
@@ -47,21 +47,24 @@ class MovieRepository {
     
     func getStorageMovieList(callback: ([Movie]) -> Void) {
         localDataSource.getStorageMovieList(callback: { movieDataList in
-            movieDataList.map { movieData in
-                movieData.toDto()
+            let result: [Movie] = movieDataList.map { movieData in
+                print("movieData: \(movieData)")
+                return movieData.toDto()
             }
+
+            callback(result)
         })
     }
     
-    func addStorageMovie(movie: MovieData, callback: (Bool) -> Void) {
-        localDataSource.addStorageMovie(movieData: movie, callback: callback)
+    func addStorageMovie(movie: Movie, callback: (Bool) -> Void) {
+        localDataSource.addStorageMovie(movieData: movie.toLocalModel(), callback: callback)
     }
     
     func deleteStorageMovie(movieId: Int, callback: (Bool) -> Void) {
         localDataSource.deleteStorageMovie(movieId: movieId, callback: callback)
     }
     
-    func updateEvaluation(movie: MovieData, changedRating: CGFloat, callback: (Bool) -> Void) {
-        localDataSource.updateEvaluation(movie: movie, changedRating: changedRating, callback: callback)
+    func updateEvaluation(movie: Movie, changedRating: CGFloat, callback: (Bool) -> Void) {
+        localDataSource.updateEvaluation(movie: movie.toLocalModel(), changedRating: changedRating, callback: callback)
     }
 }

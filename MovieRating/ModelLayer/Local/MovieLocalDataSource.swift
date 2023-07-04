@@ -16,16 +16,12 @@ class MovieLocalDataSource {
         
     }
     
-    func isSelectedMovie() {
-        
-    }
-    
     func getStorageMovie(movieId : Int) -> MovieData? {
         do {
             let realm = try Realm()
             return realm.object(ofType: MovieData.self, forPrimaryKey: movieId)
         } catch let error as NSError {
-            print("Error updating movie userRate: \(error.localizedDescription)")
+            print("Error: \(error.localizedDescription)")
             return nil
         }
     }

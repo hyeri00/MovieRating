@@ -9,7 +9,8 @@
 /* Begin PBXBuildFile section */
 		1C0C7B232A0A26DA0097F22A /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C0C7B222A0A26DA0097F22A /* Protocol.swift */; };
 		1C21A1EE2A42D3F400AD6A0F /* LabelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C21A1ED2A42D3F400AD6A0F /* LabelManager.swift */; };
-		1C3A4A532A2C736C00FCD300 /* BookmarkResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3A4A522A2C736C00FCD300 /* BookmarkResult.swift */; };
+		1C21A1F22A52FED700AD6A0F /* UIViewController+SafariViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C21A1F12A52FED700AD6A0F /* UIViewController+SafariViewController.swift */; };
+		1C21A1F42A53253100AD6A0F /* UIImageView+Kingfisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C21A1F32A53253100AD6A0F /* UIImageView+Kingfisher.swift */; };
 		1C3A4A572A2C755000FCD300 /* Movie.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3A4A562A2C755000FCD300 /* Movie.swift */; };
 		1C3A4A592A2C759E00FCD300 /* Genre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3A4A582A2C759E00FCD300 /* Genre.swift */; };
 		1C3A4A5D2A2C78D200FCD300 /* MovieMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3A4A5C2A2C78D200FCD300 /* MovieMapper.swift */; };
@@ -40,7 +41,8 @@
 /* Begin PBXFileReference section */
 		1C0C7B222A0A26DA0097F22A /* Protocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
 		1C21A1ED2A42D3F400AD6A0F /* LabelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelManager.swift; sourceTree = "<group>"; };
-		1C3A4A522A2C736C00FCD300 /* BookmarkResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkResult.swift; sourceTree = "<group>"; };
+		1C21A1F12A52FED700AD6A0F /* UIViewController+SafariViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+SafariViewController.swift"; sourceTree = "<group>"; };
+		1C21A1F32A53253100AD6A0F /* UIImageView+Kingfisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImageView+Kingfisher.swift"; sourceTree = "<group>"; };
 		1C3A4A562A2C755000FCD300 /* Movie.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Movie.swift; sourceTree = "<group>"; };
 		1C3A4A582A2C759E00FCD300 /* Genre.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Genre.swift; sourceTree = "<group>"; };
 		1C3A4A5C2A2C78D200FCD300 /* MovieMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieMapper.swift; sourceTree = "<group>"; };
@@ -88,6 +90,8 @@
 			isa = PBXGroup;
 			children = (
 				1C21A1ED2A42D3F400AD6A0F /* LabelManager.swift */,
+				1C21A1F12A52FED700AD6A0F /* UIViewController+SafariViewController.swift */,
+				1C21A1F32A53253100AD6A0F /* UIImageView+Kingfisher.swift */,
 			);
 			path = Utility;
 			sourceTree = "<group>";
@@ -236,7 +240,6 @@
 				1CF1D71C2A24AA0100F392AB /* HomeViewModel.swift */,
 				1CF1D71E2A24B25100F392AB /* Observer.swift */,
 				1CF1D7212A24BB0F00F392AB /* MovieSearchResult.swift */,
-				1C3A4A522A2C736C00FCD300 /* BookmarkResult.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -375,16 +378,17 @@
 			files = (
 				1C21A1EE2A42D3F400AD6A0F /* LabelManager.swift in Sources */,
 				1C3A4A5D2A2C78D200FCD300 /* MovieMapper.swift in Sources */,
+				1C21A1F42A53253100AD6A0F /* UIImageView+Kingfisher.swift in Sources */,
 				1C3A4A572A2C755000FCD300 /* Movie.swift in Sources */,
 				1CF1D71D2A24AA0100F392AB /* HomeViewModel.swift in Sources */,
 				1CF1D71F2A24B25100F392AB /* Observer.swift in Sources */,
 				1C3A4A592A2C759E00FCD300 /* Genre.swift in Sources */,
-				1C3A4A532A2C736C00FCD300 /* BookmarkResult.swift in Sources */,
 				1C753DFC29EFF0E20074C83D /* RatingView.swift in Sources */,
 				1C0C7B232A0A26DA0097F22A /* Protocol.swift in Sources */,
 				1C753DF529E578140074C83D /* MovieTableViewCell.swift in Sources */,
 				1C753DF329E578000074C83D /* MovieDetailViewController.swift in Sources */,
 				1C8F5FC52A1267D500A58B1F /* MovieRepository.swift in Sources */,
+				1C21A1F22A52FED700AD6A0F /* UIViewController+SafariViewController.swift in Sources */,
 				1CE1DBA029DA974400645F68 /* HomeTableViewController.swift in Sources */,
 				1CF1D7222A24BB0F00F392AB /* MovieSearchResult.swift in Sources */,
 				1CE1DB9C29DA974400645F68 /* AppDelegate.swift in Sources */,

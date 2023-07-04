@@ -180,7 +180,7 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func getMovieData(at indexPath: IndexPath) -> Int! {
-        guard let cell = movieTableView.cellForRow(at: indexPath) as? MovieTableViewCell else {
+        guard movieTableView.cellForRow(at: indexPath) is MovieTableViewCell else {
             return nil
         }
         
@@ -188,7 +188,7 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func setTotalCountLabel(_ totalCount: Int) {
-        let countString = String(format: "총 %02d개", totalCount)
+        let countString = String(format: Home.movieSearchCount, totalCount)
         self.totalCountLabel.text = countString
         print("총 영화 개수: \(totalCount)")
     }
@@ -234,18 +234,8 @@ extension HomeTableViewController {
                                             placeholder: UIImage(systemName: "photo")?.withTintColor(.black, renderingMode: .alwaysOriginal))
         }
         
-        if movie.year.isEmpty {
-            cell.titleAndYearLabel.text = "\(movie.title)"
-        } else {
-            cell.titleAndYearLabel.text = "\(movie.title) (\(movie.year))"
-        }
-        
-        if movie.genres.isEmpty {
-            cell.genreLabel.text = movieInfo.emptyInfo
-        } else {
-            cell.genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
-        }
-        
+        cell.titleAndYearLabel.text = movie.year.isEmpty ? "\(movie.title)" : "\(movie.title) (\(movie.year))"
+        cell.genreLabel.text = movie.genres.isEmpty ? movieInfo.emptyInfo : movie.genres.map { $0.name }.joined(separator: ", ")
         cell.ratingLabel.text = movie.voteAverageString
         
         cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
@@ -264,12 +254,8 @@ extension HomeTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         let movie = homeViewModel.movieSearchResult.value.movies[indexPath.row]
-        let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)")!
-        
-        let safariViewController = SFSafariViewController(url: movieURL)
-        present(safariViewController, animated: true, completion: nil)
+        presentSafariViewController(withMovieID: movie.id)
     }
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {

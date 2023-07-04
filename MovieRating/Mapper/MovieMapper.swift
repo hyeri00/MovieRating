@@ -51,6 +51,7 @@ extension Movie {
         movieData.id = id
         movieData.posterPath = posterPath
         movieData.title = title
+        movieData.year = year
         movieData.genreIds.append(objectsIn: genres.map({ genre in
             return genre.id
         }))

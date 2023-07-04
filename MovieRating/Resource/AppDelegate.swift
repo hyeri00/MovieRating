@@ -22,17 +22,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = navigationController
         
         let config = Realm.Configuration(
-            schemaVersion: 2,
+            schemaVersion: 3,
             migrationBlock: { migration, oldSchemaVersion in
-                if oldSchemaVersion < 1 {
-                    migration.enumerateObjects(ofType: MovieData.className()) { oldObject, newObject in
-                        newObject!["userRate"] = 0.0
-                    }
-                }
-                if oldSchemaVersion < 2 {
-                    migration.enumerateObjects(ofType: MovieData.className()) { oldObject, newObject in
-                        newObject!["isBookmarked"] = false
-                    }
+                if oldSchemaVersion < 3 {
+                    migration.deleteData(forType: "MovieData")
                 }
                 // Additional migration blocks can be added here for further schema changes
             })

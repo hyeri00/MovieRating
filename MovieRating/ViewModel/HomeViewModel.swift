@@ -80,7 +80,7 @@ class HomeViewModel {
                     }
                 }
             } else {
-                movieRepository.addStorageMovie(movie: movie.toLocalModel()) { isSucceed in
+                movieRepository.addStorageMovie(movie: movie) { isSucceed in
                     if (isSucceed) {
                         isBookmarkedMovie.value = movie
                     }

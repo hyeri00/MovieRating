@@ -16,7 +16,7 @@ class MovieData: Object {
     @objc dynamic var userRate: Double = 0
     @objc dynamic var isBookmarked = false
     
-    var genreIds = List<Int>()
+    let genreIds = List<Int>()
         
     override static func primaryKey() -> String? {
         return "id"

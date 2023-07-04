@@ -10,7 +10,7 @@ import SafariServices
 
 class MovieDetailViewController: UIViewController {
     
-    var moviesData: MovieData?
+    var movie: Movie?
     weak var delegate: MovieDetailDelegate?
     private let toast = ToastMessage()
     private var detailViewTopConstraint: NSLayoutConstraint!
@@ -145,26 +145,23 @@ class MovieDetailViewController: UIViewController {
     }
     
     private func getMovies() {
-        if let movie = moviesData {
-            if let imageData = Data(base64Encoded: movie.posterPath ?? "") {
-                let image = UIImage(data: imageData)
-                thumbnailImage.image = image
-            }
-            titleAndYearLabel.text = "\(movie.title)"
-            genreLabel.text = "\(movie.genreIds)"
-            ratingLabel.text = "\(movie.userRate)"
+        if let movie = movie {
+            thumbnailImage.setImage(withPosterPath: movie.posterPath)
+            titleAndYearLabel.text = "\(movie.title) (\(movie.year))" 
+            genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
+            ratingLabel.text = "\(movie.voteAverageString)"
         }
     }
     
     private func getRateView() {
-        if let movie = moviesData {
-            rateView.currentStar = Int(movie.userRate)
+        if let movie = movie {
+            rateView.currentStar = Int(Double(movie.userRate))
             rateView.updateButtonAppearance()
         }
     }
     
     private func setupAddTarget() {
-        movieDetailSiteButton.addTarget(self, action: #selector(goMovieDeatilSite), for: .touchUpInside)
+        movieDetailSiteButton.addTarget(self, action: #selector(goMovieDetailSite), for: .touchUpInside)
         rateView.addTarget(self, action: #selector(changeRate), for: .valueChanged)
         removeMovieCellButton.addTarget(self, action: #selector(deleteMovieCollectionView), for: .touchUpInside)
     }
@@ -249,17 +246,12 @@ class MovieDetailViewController: UIViewController {
         }, completion: nil)
     }
     
-    @objc private func goMovieDeatilSite() {
-        guard let movie = moviesData,
-              let movieURL = URL(string: "https://www.themoviedb.org/movie/\(movie.id)") else {
-            return
-        }
-        
-        let safariViewController = SFSafariViewController(url: movieURL)
-        present(safariViewController, animated: true, completion: nil)
+    @objc private func goMovieDetailSite() {
+        guard let movie = movie else { return }
+        presentSafariViewController(withMovieID: movie.id)
     }
     
-    @objc private func changeRate() {        
+    @objc private func changeRate() {
         let rate = CGFloat(rateView.currentStar)
         print("Rating changed to: \(rate)")
         let userInfo = ["rate": rate]
@@ -282,9 +274,7 @@ class MovieDetailViewController: UIViewController {
             self.toast.showToast(image: UIImage(named: "trash")!,
                                  message: Toast.deleteMessage)
 
-            guard let movie = self.moviesData else {
-                return
-            }
+            guard let movie = self.movie else { return }
             
             movieRepository.deleteStorageMovie(movieId: movie.id) { isSuccess in
                 if isSuccess {
