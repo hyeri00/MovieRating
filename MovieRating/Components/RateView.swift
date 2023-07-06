@@ -84,7 +84,9 @@ class RateView: RatingView {
         for i in end + 1..<starNumber {
             buttons[i].setImage(starEmptyImage, for: .normal)
         }
-        currentStar = end + 1
+        
+        currentStar = (end + 1 == currentStar) ? 0 : end + 1
+
         sendActions(for: .valueChanged)
     }
 }
