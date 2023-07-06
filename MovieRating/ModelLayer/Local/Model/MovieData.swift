@@ -8,14 +8,15 @@
 import RealmSwift
 
 class MovieData: Object {
-    @objc dynamic var id = UUID().uuidString
-    @objc dynamic var thumbnailImageData: Data?
+    @objc dynamic var id: Int = 0
+    @objc dynamic var posterPath: String?
     @objc dynamic var title: String = ""
     @objc dynamic var year: String = ""
-    @objc dynamic var genre: String = ""
-    @objc dynamic var rating: String = ""
+    @objc dynamic var voteAverageString: String = ""
     @objc dynamic var userRate: Double = 0
     @objc dynamic var isBookmarked = false
+    
+    let genreIds = List<Int>()
         
     override static func primaryKey() -> String? {
         return "id"
