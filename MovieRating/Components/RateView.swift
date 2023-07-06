@@ -21,6 +21,14 @@ class RateView: RatingView {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+    
+    lazy var starFillImage: UIImage? = {
+        return UIImage(systemName: "star.fill")
+    }()
+
+    lazy var starEmptyImage: UIImage? = {
+        return UIImage(systemName: "star")
+    }()
 
     override func configure() {
         super.configure()
@@ -47,9 +55,9 @@ class RateView: RatingView {
     func updateButtonAppearance() {
         for (index, button) in buttons.enumerated() {
             if index <= currentStar - 1 {
-                button.setImage(UIImage(systemName: "star.fill"), for: .normal)
+                button.setImage(starFillImage, for: .normal)
             } else {
-                button.setImage(UIImage(systemName: "star"), for: .normal)
+                button.setImage(starEmptyImage, for: .normal)
             }
         }
     }
@@ -59,7 +67,7 @@ class RateView: RatingView {
 
         for i in 0..<5 {
             let button = UIButton()
-            button.setImage(UIImage(systemName: "star"), for: .normal)
+            button.setImage(starFillImage, for: .normal)
             button.tag = i
             buttons += [button]
             stackView.addArrangedSubview(button)
@@ -71,10 +79,10 @@ class RateView: RatingView {
         let end = sender.tag
 
         for i in 0...end {
-            buttons[i].setImage(UIImage(systemName: "star.fill"), for: .normal)
+            buttons[i].setImage(starFillImage, for: .normal)
         }
         for i in end + 1..<starNumber {
-            buttons[i].setImage(UIImage(systemName: "star"), for: .normal)
+            buttons[i].setImage(starEmptyImage, for: .normal)
         }
         currentStar = end + 1
         sendActions(for: .valueChanged)

@@ -67,4 +67,12 @@ class MovieRepository {
     func updateEvaluation(movie: Movie, changedRating: CGFloat, callback: (Bool) -> Void) {
         localDataSource.updateEvaluation(movie: movie.toLocalModel(), changedRating: changedRating, callback: callback)
     }
+    
+    func updateUserRate(movieId: Int, rate: Double, callback: (Bool) -> Void) {
+        localDataSource.updateUserRate(movieId: movieId, rate: rate, callback: callback)
+    }
+    
+    func getUserRate(movieId: Int, completion: (Double?) -> Void) {
+        localDataSource.getUserRate(movieId: movieId, completion: completion)
+    }
 }

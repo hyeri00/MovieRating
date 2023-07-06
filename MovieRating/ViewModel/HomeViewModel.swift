@@ -69,24 +69,26 @@ class HomeViewModel {
     }
     
     func changeBookmark(movieId: Int) {
-        if var movie = movieSearchResult.value.movies.first(where: { movie in movie.id == movieId}) {
+        if let movieIndex = movieSearchResult.value.movies.firstIndex(where: { $0.id == movieId }) {
+            var movie = movieSearchResult.value.movies[movieIndex]
             let isBookmarked = movie.isBookmarked
             movie.isBookmarked = !isBookmarked
 
-            if (isBookmarked) {
+            if isBookmarked {
                 movieRepository.deleteStorageMovie(movieId: movieId) { isSucceed in
-                    if (isSucceed) {
+                    if isSucceed {
                         isUnbookmarkedMovie.value = movie
+                        movieSearchResult.value.movies[movieIndex] = movie
                     }
                 }
             } else {
                 movieRepository.addStorageMovie(movie: movie) { isSucceed in
-                    if (isSucceed) {
+                    if isSucceed {
                         isBookmarkedMovie.value = movie
+                        movieSearchResult.value.movies[movieIndex] = movie
                     }
                 }
             }
-            
         } else {
             print("not found movie \(movieId)")
         }

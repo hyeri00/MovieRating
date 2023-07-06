@@ -152,10 +152,6 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        2. 이거 repository ㅇㅋ?
-//        let selectedMovie = movieRepository.getMovie(indexPath.item)
-        
-        
         let detailVC = MovieDetailViewController()
         detailVC.modalPresentationStyle = .overFullScreen
 

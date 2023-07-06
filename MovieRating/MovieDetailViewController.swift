@@ -148,15 +148,19 @@ class MovieDetailViewController: UIViewController {
         if let movie = movie {
             thumbnailImage.setImage(withPosterPath: movie.posterPath)
             titleAndYearLabel.text = "\(movie.title) (\(movie.year))" 
-            genreLabel.text = movie.genres.map { $0.name }.joined(separator: ", ")
+            genreLabel.text = movie.genres.isEmpty ? movieInfo.emptyInfo : movie.genres.map { $0.name }.joined(separator: ", ")
             ratingLabel.text = "\(movie.voteAverageString)"
         }
     }
     
     private func getRateView() {
-        if let movie = movie {
-            rateView.currentStar = Int(Double(movie.userRate))
-            rateView.updateButtonAppearance()
+        guard let movie = self.movie else { return }
+        
+        movieRepository.getUserRate(movieId: movie.id) { rate in
+            if let buttonState = rate {
+                rateView.currentStar = Int(buttonState)
+                rateView.updateButtonAppearance()
+            }
         }
     }
     
@@ -259,9 +263,16 @@ class MovieDetailViewController: UIViewController {
                                         object: nil,
                                         userInfo: userInfo)
         
-        let rateButton = rateView.currentStar
+        let rateButton = Double(rateView.currentStar)
         print("button count: \(rateButton)")
-        UserDefaults.standard.set(rateButton, forKey: "buttonState")
+        
+        guard let movie = self.movie else { return }
+        
+        movieRepository.updateUserRate(movieId: movie.id, rate: rateButton) { isSuccess in
+            if isSuccess {
+                rateView.updateButtonAppearance()
+            }
+        }
     }
     
     @objc private func deleteMovieCollectionView() {

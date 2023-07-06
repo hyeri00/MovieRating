@@ -9,7 +9,7 @@ import Foundation
 
 class MovieSearchResult {
     
-    let movies: Array<Movie>
+    var movies: Array<Movie>
     let totalCount: Int
     let indexPaths: [IndexPath]
     

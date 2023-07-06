@@ -309,7 +309,7 @@ extension HomeTableViewController: UISearchBarDelegate {
         }
         homeViewModel.resetPages()
         
-        if let text = searchBar.text {
+        if searchBar.text != nil {
             searchMovies(query: searchBar.text!)
         }
     }

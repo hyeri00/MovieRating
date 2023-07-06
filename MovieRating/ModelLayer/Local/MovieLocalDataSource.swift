@@ -16,7 +16,7 @@ class MovieLocalDataSource {
         
     }
     
-    func getStorageMovie(movieId : Int) -> MovieData? {
+    func getStorageMovie(movieId: Int) -> MovieData? {
         do {
             let realm = try Realm()
             return realm.object(ofType: MovieData.self, forPrimaryKey: movieId)
@@ -33,19 +33,6 @@ class MovieLocalDataSource {
             callback(moviesData)
         } catch let error as NSError {
             print("Error: \(error.localizedDescription)")
-        }
-    }
-    
-    func updateEvaluation(movie: MovieData, changedRating: CGFloat, callback: (Bool) -> Void) {
-        do {
-            let realm = try Realm()
-            try realm.write {
-                movie.userRate = changedRating
-                callback(true)
-            }
-        } catch let error as NSError {
-            callback(false)
-            print("Error updating movie userRate: \(error.localizedDescription)")
         }
     }
     
@@ -76,6 +63,50 @@ class MovieLocalDataSource {
         } catch {
             callback(false)
             print("Failed to delete movie: \(error.localizedDescription)")
+        }
+    }
+    
+    func updateEvaluation(movie: MovieData, changedRating: CGFloat, callback: (Bool) -> Void) {
+        do {
+            let realm = try Realm()
+            try realm.write {
+                movie.userRate = changedRating
+                callback(true)
+            }
+        } catch let error as NSError {
+            callback(false)
+            print("Error updating movie userRate: \(error.localizedDescription)")
+        }
+    }
+    
+    func updateUserRate(movieId: Int, rate: Double, callback: (Bool) -> Void) {
+        do {
+            let realm = try Realm()
+            if let movieData = realm.object(ofType: MovieData.self, forPrimaryKey: movieId) {
+                try realm.write {
+                    movieData.userRate = rate
+                }
+                callback(true)
+            } else {
+                callback(false)
+            }
+        } catch {
+            callback(false)
+            print("Failed to update user rate: \(error.localizedDescription)")
+        }
+    }
+    
+    func getUserRate(movieId: Int, completion: (Double?) -> Void) {
+        do {
+            let realm = try Realm()
+            if let movieData = realm.object(ofType: MovieData.self, forPrimaryKey: movieId) {
+                completion(movieData.userRate)
+            } else {
+                completion(nil)
+            }
+        } catch {
+            print("Failed to get user rate: \(error.localizedDescription)")
+            completion(nil)
         }
     }
 }
