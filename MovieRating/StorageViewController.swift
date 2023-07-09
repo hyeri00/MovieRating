@@ -110,6 +110,11 @@ class StorageViewController: UIViewController {
             let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
                 return
         }
+        let movie = storageViewModel.movieStorageResult.value.movies[cellIndex.item]
+        storageViewModel.updateEvaluationLabel(movie: movie, rate: rate)
+        
+        selectedCell.evaluationLabel.text = rate > 0.0 ? "\(Storage.evaluationState) \(rate)" : Storage.unevaluationState
+        selectedCell.evaluationLabel.textColor = rate > 0.0 ? .black : .lightGray
     }
 }
 

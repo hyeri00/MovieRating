@@ -10,10 +10,10 @@ import SafariServices
 
 class MovieDetailViewController: UIViewController {
     
-    var movie: Movie?
     weak var delegate: MovieDetailDelegate?
     private let toast = ToastMessage()
     private var detailViewTopConstraint: NSLayoutConstraint!
+    
     private let movieRepository: MovieRepository! = MovieRepository.shared
     
     private let backgroundView: UIView = {
