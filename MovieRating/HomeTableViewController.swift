@@ -6,15 +6,13 @@
 //
 
 import UIKit
-import Kingfisher
-import SafariServices
 
 class HomeTableViewController: UITableViewController {
     
-    private let homeViewModel: HomeViewModel! = HomeViewModel()
-    
     private var searchTask: DispatchWorkItem?
     private let toast = ToastMessage()
+    
+    private let homeViewModel: HomeViewModel! = HomeViewModel()
     
     private var emptyImage: UIImageView = {
         let imageView = UIImageView()
@@ -133,7 +131,6 @@ class HomeTableViewController: UITableViewController {
     private func setNavigationBar() {
         let searchController = UISearchController(searchResultsController: nil)
         navigationItem.searchController = searchController
-        
         
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
@@ -281,14 +278,12 @@ extension HomeTableViewController: UISearchBarDelegate {
                 DispatchQueue.main.async {
                     self?.stackView.isHidden = false
                     self?.emptySearchLabel.isHidden = true
-                    self?.movieTableView.reloadData()
                 }
             } else {
                 self?.searchMovies(query: searchText)
-                DispatchQueue.main.async {
-                    self?.movieTableView.reloadData()
-                }
+                self?.movieTableView.isHidden = false
             }
+            self?.movieTableView.reloadData()
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: searchTask)
@@ -306,6 +301,7 @@ extension HomeTableViewController: UISearchBarDelegate {
         
         DispatchQueue.main.async { [self] in
             movieTableView.reloadData()
+            movieTableView.isHidden = false
         }
         homeViewModel.resetPages()
         
@@ -317,6 +313,9 @@ extension HomeTableViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         homeViewModel.clear()
+        movieTableView.isHidden = true
+        stackView.isHidden = false
+        totalCountLabel.isHidden = true
         
         print(#function)
     }

@@ -14,7 +14,7 @@ struct Home {
     static let navigationBarTitle = "홈"
     static let searchBarPlaceHolder = "검색어를 입력하세요"
     
-    static let movieSearchCount = "총 %02d개"
+    static let movieSearchCount = "총 %2d개"
 }
 
 

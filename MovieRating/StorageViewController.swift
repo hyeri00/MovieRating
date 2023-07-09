@@ -10,7 +10,7 @@ import Kingfisher
 
 class StorageViewController: UIViewController {
     
-    private let movieRepository: MovieRepository! = MovieRepository.shared
+    private let storageViewModel: StorageViewModel! = StorageViewModel()
     
     let emptyLabel: UILabel = {
         let label = UILabel()
@@ -34,15 +34,13 @@ class StorageViewController: UIViewController {
         view.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: "MovieCollectionViewCell")
         return view
     }()
-    
-    private var moviesInfo: [Movie]! = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setup()
         addViews()
-        getMovies()
+        setupViewModel()
         getRateLabel()
         setNavigationBar()
         setCollectionView()
@@ -52,7 +50,7 @@ class StorageViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        getMovies()
+        setupViewModel()
         getRateLabel()
     }
     
@@ -65,15 +63,12 @@ class StorageViewController: UIViewController {
         view.addSubview(movieCollectionView)
     }
     
-    private func getMovies() {
-        movieRepository.getStorageMovieList { movies in
-            print("movies \(movies)")
-            moviesInfo = movies
-            print("moviesInfo \(String(describing: moviesInfo))")
-            
-            emptyLabel.isHidden = !moviesInfo.isEmpty
-            movieCollectionView.reloadData()
-        }
+    private func setupViewModel() {
+        let movies = storageViewModel.movieStorageResult.value.movies
+        storageViewModel.getStorageMovieList()
+        
+        emptyLabel.isHidden = !movies.isEmpty
+        print("저장된 영화들 \(movies)")
     }
     
     private func getRateLabel() {
@@ -115,14 +110,6 @@ class StorageViewController: UIViewController {
             let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
                 return
         }
-        let movie = moviesInfo[cellIndex.item]
-
-        movieRepository.updateEvaluation(movie: movie, changedRating: rate) { isSuccess in
-            
-        }
-        
-        selectedCell.evaluationLabel.text = "\(Storage.evaluationState) \(rate)"
-        selectedCell.evaluationLabel.textColor = .black
     }
 }
 
@@ -133,20 +120,20 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("들어온 영화 data count: \(moviesInfo.count)")
-        return moviesInfo?.count ?? 0
+        print("들어온 영화 data count: \(storageViewModel.movieStorageResult.value.movies.count)")
+        return storageViewModel.movieStorageResult.value.movies.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
-        let movie = moviesInfo[indexPath.item]
+        let movie = storageViewModel.movieStorageResult.value.movies[indexPath.item]
         
         cell.thumbnailImage.setImage(withPosterPath: movie.posterPath)
 
         cell.titleLabel.text = movie.year.isEmpty ? "\(movie.title)" : "\(movie.title) (\(movie.year))"
         
-        cell.evaluationLabel.text = movie.userRate > 0 ? "\(Storage.evaluationState) \(movie.userRate)" : Storage.unevaluationState
-        cell.evaluationLabel.textColor = movie.userRate > 0 ? .black : .lightGray
+        cell.evaluationLabel.text = movie.userRate > 0.0 ? "\(Storage.evaluationState) \(movie.userRate)" : Storage.unevaluationState
+        cell.evaluationLabel.textColor = movie.userRate > 0.0 ? .black : .lightGray
 
         return cell
     }
@@ -155,9 +142,10 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
         let detailVC = MovieDetailViewController()
         detailVC.modalPresentationStyle = .overFullScreen
 
-        let moviesId = moviesInfo[indexPath.item].id
-        let selectedMovie = movieRepository.getStorageMovie(id: moviesId)
-        detailVC.movie = selectedMovie
+//        let moviesId = storageViewModel.movieStorageResult.value.movies[indexPath.item].id
+//        let selectedMovie = movieRepository.getStorageMovie(id: moviesId)
+//        detailVC.movie = selectedMovie
+        detailVC.delegate = self
 
         self.present(detailVC, animated: false, completion: nil)
     }
