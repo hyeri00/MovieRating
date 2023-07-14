@@ -20,7 +20,7 @@ class MovieDetailViewController: UIViewController {
     
     private let backgroundView: UIView = {
         let view = UIView()
-        view.backgroundColor = .darkGray.withAlphaComponent(0.7)
+        view.backgroundColor = .darkGray.withAlphaComponent(0.9)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -168,11 +168,11 @@ class MovieDetailViewController: UIViewController {
     }
     
     private func getRateView() {
-        let selectedMovie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath!.item]
+        guard let movies = getSelectedMovie() else { return }
         
-        detailViewModel.getUserRate(movieId: selectedMovie.id) { [self] rate in
+        detailViewModel.getUserRate(movieId: movies.id) { [self] rate in
             if let buttonState = rate {
-                rateView.currentStar = Int(Double(buttonState))
+                rateView.currentStar = Int(buttonState)
                 rateView.updateButtonAppearance()
             }
         }
@@ -264,6 +264,15 @@ class MovieDetailViewController: UIViewController {
         }, completion: nil)
     }
     
+    private func getSelectedMovie() -> Movie? {
+        guard let storageMovie = selectedIndexPath,
+              storageMovie.item < detailViewModel.movieDetailResult.value.movies.count else {
+            return nil
+        }
+        
+        return detailViewModel.movieDetailResult.value.movies[storageMovie.item]
+    }
+    
     @objc private func showMovieDetail() {
         let movie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath!.item]
         presentSafariViewController(withMovieID: movie.id)
@@ -280,16 +289,11 @@ class MovieDetailViewController: UIViewController {
         let rateButton = Double(rateView.currentStar)
         print("button count: \(rateButton)")
         
-        guard let selectedIndexPath = selectedIndexPath,
-              selectedIndexPath.item < detailViewModel.movieDetailResult.value.movies.count else {
-            return
-        }
+        guard let movies = getSelectedMovie() else { return }
         
-        let selectedMovie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath.item]
-        
-        detailViewModel.updateUserRate(movieId: selectedMovie.id, rate: rateButton) { [weak self] success in
+        detailViewModel.updateUserRate(movieId: movies.id, rate: rateButton) { [self] success in
             if success {
-                self?.rateView.updateButtonAppearance()
+                rateView.updateButtonAppearance()
             }
         }
     }
@@ -304,14 +308,9 @@ class MovieDetailViewController: UIViewController {
             toast.showToast(image: UIImage(named: "trash")!,
                                  message: Toast.deleteMessage)
             
-            guard let selectedIndexPath = selectedIndexPath,
-                  selectedIndexPath.item < detailViewModel.movieDetailResult.value.movies.count else {
-                return
-            }
+            guard let movies = getSelectedMovie() else { return }
             
-            let selectedMovie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath.item]
-            
-            detailViewModel.deleteStorageMovie(movieId: selectedMovie.id) { [self] success in
+            detailViewModel.deleteStorageMovie(movieId: movies.id) { [self] success in
                 if success {
                     dismiss(animated: false)
                     delegate?.updateCollectionView()

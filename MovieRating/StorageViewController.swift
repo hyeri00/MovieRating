@@ -105,6 +105,11 @@ class StorageViewController: UIViewController {
         ])
     }
     
+    private func configureEvaluationLabel(forCell cell: MovieCollectionViewCell, withRate rate: CGFloat) {
+        cell.evaluationLabel.text = rate > 0.0 ? "\(Storage.evaluationState) \(rate)" : Storage.unevaluationState
+        cell.evaluationLabel.textColor = rate > 0.0 ? .black : .lightGray
+    }
+    
     @objc private func updateEvaluationLabel(notification: Notification) {
         guard let userInfo = notification.userInfo,
             let rate = userInfo["rate"] as? CGFloat,
@@ -112,11 +117,8 @@ class StorageViewController: UIViewController {
             let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
                 return
         }
-//        let movie = storageViewModel.movieStorageResult.value.movies[cellIndex.item]
-//        storageViewModel.updateEvaluationLabel(movie: movie, rate: rate)
         
-        selectedCell.evaluationLabel.text = rate > 0.0 ? "\(Storage.evaluationState) \(rate)" : Storage.unevaluationState
-        selectedCell.evaluationLabel.textColor = rate > 0.0 ? .black : .lightGray
+        configureEvaluationLabel(forCell: selectedCell, withRate: rate)
     }
 }
 
@@ -136,18 +138,15 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
         let movie = storageViewModel.movieStorageResult.value.movies[indexPath.item]
         
         cell.thumbnailImage.setImage(withPosterPath: movie.posterPath)
-
         cell.titleLabel.text = movie.year.isEmpty ? "\(movie.title)" : "\(movie.title) (\(movie.year))"
-        
-        cell.evaluationLabel.text = movie.userRate > 0.0 ? "\(Storage.evaluationState) \(movie.userRate)" : Storage.unevaluationState
-        cell.evaluationLabel.textColor = movie.userRate > 0.0 ? .black : .lightGray
+        configureEvaluationLabel(forCell: cell, withRate: movie.userRate)
 
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let detailVC = MovieDetailViewController()
-        detailVC.modalPresentationStyle = .overFullScreen
+        detailVC.modalPresentationStyle = .fullScreen
         detailVC.selectedIndexPath = indexPath
         detailVC.delegate = self
         self.present(detailVC, animated: false, completion: nil)
