@@ -80,7 +80,7 @@ class MovieDetailViewController: UIViewController {
         return view
     }()
     
-    private let movieDetailSiteButton: UIButton = {
+    private let movieDetailButton: UIButton = {
         let button = UIButton(type: .custom)
         button.setTitle(Detail.movieDetailInfo, for: .normal)
         button.setTitleColor(.black, for: .normal)
@@ -120,7 +120,7 @@ class MovieDetailViewController: UIViewController {
         
         addViews()
         getMovies()
-//        getRateView()
+        getRateView()
         setupAddTarget()
         setSeparatorView()
         setBackgroundView()
@@ -140,7 +140,7 @@ class MovieDetailViewController: UIViewController {
         view.addSubview(titleAndYearLabel)
         view.addSubview(genreLabel)
         view.addSubview(ratingStackView)
-        view.addSubview(movieDetailSiteButton)
+        view.addSubview(movieDetailButton)
         view.addSubview(rateLabel)
         view.addSubview(rateView)
         view.addSubview(removeMovieCellButton)
@@ -179,7 +179,7 @@ class MovieDetailViewController: UIViewController {
     }
     
     private func setupAddTarget() {
-        movieDetailSiteButton.addTarget(self, action: #selector(goMovieDetailSite), for: .touchUpInside)
+        movieDetailButton.addTarget(self, action: #selector(showMovieDetail), for: .touchUpInside)
         rateView.addTarget(self, action: #selector(changeRate), for: .valueChanged)
         removeMovieCellButton.addTarget(self, action: #selector(deleteMovieCollectionView), for: .touchUpInside)
     }
@@ -192,7 +192,7 @@ class MovieDetailViewController: UIViewController {
             view.addSubview(separatorView)
             
             NSLayoutConstraint.activate([
-                separatorView.topAnchor.constraint(equalTo: movieDetailSiteButton.bottomAnchor, constant: i == 1 ? 10 : 100),
+                separatorView.topAnchor.constraint(equalTo: movieDetailButton.bottomAnchor, constant: i == 1 ? 10 : 100),
                 separatorView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
                 separatorView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
                 separatorView.heightAnchor.constraint(equalToConstant: 1)
@@ -238,13 +238,13 @@ class MovieDetailViewController: UIViewController {
             ratingStackView.trailingAnchor.constraint(equalTo: detailView.trailingAnchor, constant: -15),
             ratingStackView.bottomAnchor.constraint(equalTo: thumbnailImage.bottomAnchor),
             
-            movieDetailSiteButton.topAnchor.constraint(equalTo: thumbnailImage.bottomAnchor, constant: 10),
-            movieDetailSiteButton.centerXAnchor.constraint(equalTo: detailView.centerXAnchor),
+            movieDetailButton.topAnchor.constraint(equalTo: thumbnailImage.bottomAnchor, constant: 10),
+            movieDetailButton.centerXAnchor.constraint(equalTo: detailView.centerXAnchor),
             
-            rateLabel.topAnchor.constraint(equalTo:  movieDetailSiteButton.bottomAnchor, constant: 30),
+            rateLabel.topAnchor.constraint(equalTo:  movieDetailButton.bottomAnchor, constant: 30),
             rateLabel.leadingAnchor.constraint(equalTo: detailView.leadingAnchor, constant: 15),
             
-            rateView.topAnchor.constraint(equalTo: movieDetailSiteButton.bottomAnchor, constant: 50),
+            rateView.topAnchor.constraint(equalTo: movieDetailButton.bottomAnchor, constant: 50),
             rateView.centerXAnchor.constraint(equalTo: detailView.centerXAnchor),
             
             removeMovieCellButton.leadingAnchor.constraint(equalTo: detailView.leadingAnchor, constant: 15),
@@ -264,9 +264,9 @@ class MovieDetailViewController: UIViewController {
         }, completion: nil)
     }
     
-    @objc private func goMovieDetailSite() {
-//        guard let movie = movie else { return }
-//        presentSafariViewController(withMovieID: movie.id)
+    @objc private func showMovieDetail() {
+        let movie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath!.item]
+        presentSafariViewController(withMovieID: movie.id)
     }
     
     @objc private func changeRate() {
