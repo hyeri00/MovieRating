@@ -42,19 +42,19 @@ class HomeViewModel {
         movieRepository.getMovieList(
             query: query,
             page: "\(currentPage)"
-        ) { result in
+        ) { [self] result in
             
             let newMovies = result.movies
             let totalResults = result.totalCount
-            self.totalPages = result.totalPages
+            totalPages = result.totalPages
             
             var indexPaths = [IndexPath]()
-            var resultMovies = self.movieSearchResult.value.movies
+            var resultMovies = movieSearchResult.value.movies
             
-            if self.currentPage == 1 {
+            if currentPage == 1 {
                 resultMovies = newMovies
             } else {
-                let lastRowIndex = self.movieSearchResult.value.movies.count - 1
+                let lastRowIndex = movieSearchResult.value.movies.count - 1
                 
                 for (index, movie) in newMovies.enumerated() {
                     let indexPath = IndexPath(row: lastRowIndex + index + 1, section: 0)
@@ -63,8 +63,8 @@ class HomeViewModel {
                 }
             }
             
-            self.movieSearchResult.value = MovieSearchResult(movies: resultMovies, totalCount: totalResults, indexPaths: indexPaths)
-            self.currentPage += 1
+            movieSearchResult.value = MovieSearchResult(movies: resultMovies, totalCount: totalResults, indexPaths: indexPaths)
+            currentPage += 1
         }
     }
     

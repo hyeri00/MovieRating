@@ -67,7 +67,7 @@ class RateView: RatingView {
 
         for i in 0..<5 {
             let button = UIButton()
-            button.setImage(starFillImage, for: .normal)
+            button.setImage(starEmptyImage, for: .normal)
             button.tag = i
             buttons += [button]
             stackView.addArrangedSubview(button)

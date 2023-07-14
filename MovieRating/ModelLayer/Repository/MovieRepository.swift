@@ -72,7 +72,7 @@ class MovieRepository {
         localDataSource.updateUserRate(movieId: movieId, rate: rate, callback: callback)
     }
     
-    func getUserRate(movieId: Int, completion: (Double?) -> Void) {
-        localDataSource.getUserRate(movieId: movieId, completion: completion)
+    func getUserRate(movieId: Int, callback: (Double?) -> Void) {
+        localDataSource.getUserRate(movieId: movieId, callback: callback)
     }
 }

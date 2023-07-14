@@ -68,7 +68,9 @@ class StorageViewController: UIViewController {
         storageViewModel.getStorageMovieList()
         
         emptyLabel.isHidden = !movies.isEmpty
-        print("저장된 영화들 \(movies)")
+        
+        movieCollectionView.reloadData()
+       
     }
     
     private func getRateLabel() {
@@ -110,8 +112,8 @@ class StorageViewController: UIViewController {
             let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
                 return
         }
-        let movie = storageViewModel.movieStorageResult.value.movies[cellIndex.item]
-        storageViewModel.updateEvaluationLabel(movie: movie, rate: rate)
+//        let movie = storageViewModel.movieStorageResult.value.movies[cellIndex.item]
+//        storageViewModel.updateEvaluationLabel(movie: movie, rate: rate)
         
         selectedCell.evaluationLabel.text = rate > 0.0 ? "\(Storage.evaluationState) \(rate)" : Storage.unevaluationState
         selectedCell.evaluationLabel.textColor = rate > 0.0 ? .black : .lightGray
@@ -146,12 +148,8 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let detailVC = MovieDetailViewController()
         detailVC.modalPresentationStyle = .overFullScreen
-
-//        let moviesId = storageViewModel.movieStorageResult.value.movies[indexPath.item].id
-//        let selectedMovie = movieRepository.getStorageMovie(id: moviesId)
-//        detailVC.movie = selectedMovie
+        detailVC.selectedIndexPath = indexPath
         detailVC.delegate = self
-
         self.present(detailVC, animated: false, completion: nil)
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Movie: Equatable {
+class Movie: CustomStringConvertible {
     let id: Int
     let posterPath: String?
     let title: String
@@ -17,15 +17,18 @@ struct Movie: Equatable {
     var userRate: Double
     var isBookmarked: Bool
     
-    static func == (lhs: Movie, rhs: Movie) -> Bool {
-        return lhs.id == rhs.id &&
-        lhs.posterPath == rhs.posterPath &&
-        lhs.title == rhs.title &&
-        lhs.year == rhs.year &&
-        lhs.genres == rhs.genres &&
-        lhs.voteAverageString == rhs.voteAverageString &&
-        lhs.userRate == rhs.userRate &&
-        lhs.isBookmarked == rhs.isBookmarked
+    init(id: Int, posterPath: String?, title: String, year: String, genres: [Genre], voteAverageString: String, userRate: Double, isBookmarked: Bool) {
+        self.id = id
+        self.posterPath = posterPath
+        self.title = title
+        self.year = year
+        self.genres = genres
+        self.voteAverageString = voteAverageString
+        self.userRate = userRate
+        self.isBookmarked = isBookmarked
+    }
+    
+    var description: String {
+        return "Movie(id: \(id) \n title: \(title) \n userRate: \(userRate))"
     }
 }
-

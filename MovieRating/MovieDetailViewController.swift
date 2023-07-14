@@ -10,11 +10,13 @@ import SafariServices
 
 class MovieDetailViewController: UIViewController {
     
+    var selectedIndexPath: IndexPath?
     weak var delegate: MovieDetailDelegate?
+    
     private let toast = ToastMessage()
     private var detailViewTopConstraint: NSLayoutConstraint!
     
-    private let movieRepository: MovieRepository! = MovieRepository.shared
+    private let detailViewModel: DetailViewModel! = DetailViewModel()
     
     private let backgroundView: UIView = {
         let view = UIView()
@@ -118,7 +120,7 @@ class MovieDetailViewController: UIViewController {
         
         addViews()
         getMovies()
-        getRateView()
+//        getRateView()
         setupAddTarget()
         setSeparatorView()
         setBackgroundView()
@@ -145,20 +147,32 @@ class MovieDetailViewController: UIViewController {
     }
     
     private func getMovies() {
-        if let movie = movie {
-            thumbnailImage.setImage(withPosterPath: movie.posterPath)
-            titleAndYearLabel.text = "\(movie.title) (\(movie.year))" 
-            genreLabel.text = movie.genres.isEmpty ? movieInfo.emptyInfo : movie.genres.map { $0.name }.joined(separator: ", ")
-            ratingLabel.text = "\(movie.voteAverageString)"
+        if let indexPath = selectedIndexPath {
+            setupViewModel(indexPath: indexPath)
         }
     }
     
-    private func getRateView() {
-        guard let movie = self.movie else { return }
+    private func setupViewModel(indexPath: IndexPath) {
+        detailViewModel.movieDetailResult.bind { [weak self] movieDetailResult in
+            let movies = movieDetailResult.movies
+            guard indexPath.item < movies.count else { return }
+
+            let selectedMovie = movies[indexPath.item]
+            self?.thumbnailImage.setImage(withPosterPath: selectedMovie.posterPath)
+            self?.titleAndYearLabel.text = "\(selectedMovie.title) (\(selectedMovie.year))"
+            self?.genreLabel.text = selectedMovie.genres.isEmpty ? movieInfo.emptyInfo : selectedMovie.genres.map { $0.name }.joined(separator: ", ")
+            self?.ratingLabel.text = "\(selectedMovie.voteAverageString)"
+        }
         
-        movieRepository.getUserRate(movieId: movie.id) { rate in
+        detailViewModel.isDetailMovieList()
+    }
+    
+    private func getRateView() {
+        let selectedMovie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath!.item]
+        
+        detailViewModel.getUserRate(movieId: selectedMovie.id) { [self] rate in
             if let buttonState = rate {
-                rateView.currentStar = Int(buttonState)
+                rateView.currentStar = Int(Double(buttonState))
                 rateView.updateButtonAppearance()
             }
         }
@@ -251,8 +265,8 @@ class MovieDetailViewController: UIViewController {
     }
     
     @objc private func goMovieDetailSite() {
-        guard let movie = movie else { return }
-        presentSafariViewController(withMovieID: movie.id)
+//        guard let movie = movie else { return }
+//        presentSafariViewController(withMovieID: movie.id)
     }
     
     @objc private func changeRate() {
@@ -266,11 +280,16 @@ class MovieDetailViewController: UIViewController {
         let rateButton = Double(rateView.currentStar)
         print("button count: \(rateButton)")
         
-        guard let movie = self.movie else { return }
+        guard let selectedIndexPath = selectedIndexPath,
+              selectedIndexPath.item < detailViewModel.movieDetailResult.value.movies.count else {
+            return
+        }
         
-        movieRepository.updateUserRate(movieId: movie.id, rate: rateButton) { isSuccess in
-            if isSuccess {
-                rateView.updateButtonAppearance()
+        let selectedMovie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath.item]
+        
+        detailViewModel.updateUserRate(movieId: selectedMovie.id, rate: rateButton) { [weak self] success in
+            if success {
+                self?.rateView.updateButtonAppearance()
             }
         }
     }
@@ -282,16 +301,21 @@ class MovieDetailViewController: UIViewController {
 
         let cancel = UIAlertAction(title: Detail.storageDeleteAlertCancel, style: .cancel)
         let action = UIAlertAction(title: Detail.storageDeleteAlertDefault, style: .default) { [self] _ in
-            self.toast.showToast(image: UIImage(named: "trash")!,
+            toast.showToast(image: UIImage(named: "trash")!,
                                  message: Toast.deleteMessage)
-
-            guard let movie = self.movie else { return }
             
-            movieRepository.deleteStorageMovie(movieId: movie.id) { isSuccess in
-                if isSuccess {
-                    self.dismiss(animated: false)
+            guard let selectedIndexPath = selectedIndexPath,
+                  selectedIndexPath.item < detailViewModel.movieDetailResult.value.movies.count else {
+                return
+            }
+            
+            let selectedMovie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath.item]
+            
+            detailViewModel.deleteStorageMovie(movieId: selectedMovie.id) { [self] success in
+                if success {
+                    dismiss(animated: false)
                     delegate?.updateCollectionView()
-                    self.navigationController?.popViewController(animated: true)
+                    navigationController?.popViewController(animated: true)
                 }
             }
         }

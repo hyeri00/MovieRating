@@ -96,17 +96,17 @@ class MovieLocalDataSource {
         }
     }
     
-    func getUserRate(movieId: Int, completion: (Double?) -> Void) {
+    func getUserRate(movieId: Int, callback: (Double?) -> Void) {
         do {
             let realm = try Realm()
             if let movieData = realm.object(ofType: MovieData.self, forPrimaryKey: movieId) {
-                completion(movieData.userRate)
+                callback(movieData.userRate)
             } else {
-                completion(nil)
+                callback(nil)
             }
         } catch {
             print("Failed to get user rate: \(error.localizedDescription)")
-            completion(nil)
+            callback(nil)
         }
     }
 }
