@@ -18,10 +18,11 @@ class StorageViewModel {
         
     }
     
-    func getStorageMovieList() {
+    func getStorageMovieList(completion: @escaping () -> Void) {
         movieRepository.getStorageMovieList { movie in
             self.movieStorageResult.value.movies = movie
         }
+        completion()
     }
     
     func updateEvaluationLabel(movie: Movie, rate: CGFloat) {

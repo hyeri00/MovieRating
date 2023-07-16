@@ -6,11 +6,10 @@
 //
 
 import UIKit
-import SafariServices
 
 class MovieDetailViewController: UIViewController {
     
-    var selectedIndexPath: IndexPath?
+    var selectedMovieId: Int?
     weak var delegate: MovieDetailDelegate?
     
     private let toast = ToastMessage()
@@ -147,30 +146,29 @@ class MovieDetailViewController: UIViewController {
     }
     
     private func getMovies() {
-        if let indexPath = selectedIndexPath {
-            setupViewModel(indexPath: indexPath)
+        if let movieId = selectedMovieId {
+            setupViewModel(movieId: movieId)
         }
     }
     
-    private func setupViewModel(indexPath: IndexPath) {
+    private func setupViewModel(movieId: Int) {
         detailViewModel.movieDetailResult.bind { [weak self] movieDetailResult in
             let movies = movieDetailResult.movies
-            guard indexPath.item < movies.count else { return }
-
-            let selectedMovie = movies[indexPath.item]
+            guard let selectedMovie = movies.first(where: { $0.id == movieId }) else { return }
+            
             self?.thumbnailImage.setImage(withPosterPath: selectedMovie.posterPath)
             self?.titleAndYearLabel.text = "\(selectedMovie.title) (\(selectedMovie.year))"
             self?.genreLabel.text = selectedMovie.genres.isEmpty ? movieInfo.emptyInfo : selectedMovie.genres.map { $0.name }.joined(separator: ", ")
             self?.ratingLabel.text = "\(selectedMovie.voteAverageString)"
         }
         
-        detailViewModel.isDetailMovieList()
+        detailViewModel.loadAllMovieList()
     }
     
     private func getRateView() {
-        guard let movies = getSelectedMovie() else { return }
+        guard let movie = getSelectedMovie() else { return }
         
-        detailViewModel.getUserRate(movieId: movies.id) { [self] rate in
+        detailViewModel.getUserRate(movieId: movie.id) { [self] rate in
             if let buttonState = rate {
                 rateView.currentStar = Int(buttonState)
                 rateView.updateButtonAppearance()
@@ -265,16 +263,19 @@ class MovieDetailViewController: UIViewController {
     }
     
     private func getSelectedMovie() -> Movie? {
-        guard let storageMovie = selectedIndexPath,
-              storageMovie.item < detailViewModel.movieDetailResult.value.movies.count else {
-            return nil
+        let movie = detailViewModel.movieDetailResult.value.movies
+
+        for movie in movie {
+            if movie.id == selectedMovieId {
+                return movie
+            }
         }
-        
-        return detailViewModel.movieDetailResult.value.movies[storageMovie.item]
+        return nil
     }
-    
+
     @objc private func showMovieDetail() {
-        let movie = detailViewModel.movieDetailResult.value.movies[selectedIndexPath!.item]
+        guard let movie = getSelectedMovie() else { return }
+        
         presentSafariViewController(withMovieID: movie.id)
     }
     
@@ -313,8 +314,8 @@ class MovieDetailViewController: UIViewController {
             detailViewModel.deleteStorageMovie(movieId: movies.id) { [self] success in
                 if success {
                     dismiss(animated: false)
-                    delegate?.updateCollectionView()
                     navigationController?.popViewController(animated: true)
+                    delegate?.updateCollectionView()
                 }
             }
         }

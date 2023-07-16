@@ -36,6 +36,20 @@ class MovieLocalDataSource {
         }
     }
     
+    func getUserRate(movieId: Int, callback: (Double?) -> Void) {
+        do {
+            let realm = try Realm()
+            if let movieData = realm.object(ofType: MovieData.self, forPrimaryKey: movieId) {
+                callback(movieData.userRate)
+            } else {
+                callback(nil)
+            }
+        } catch {
+            print("Failed to get user rate: \(error.localizedDescription)")
+            callback(nil)
+        }
+    }
+    
     func addStorageMovie(movieData: MovieData, callback: (Bool) -> Void) {
         do {
             let realm = try Realm()
@@ -46,23 +60,6 @@ class MovieLocalDataSource {
         } catch let error as NSError {
             callback(false)
             print("Error: \(error.localizedDescription)")
-        }
-    }
-    
-    func deleteStorageMovie(movieId: Int, callback: (Bool) -> Void) {
-        do {
-            let realm = try Realm()
-            try realm.write {
-                if let storedMovie = realm.object(ofType: MovieData.self, forPrimaryKey: movieId) {
-                    realm.delete(storedMovie)
-                    callback(true)
-                } else {
-                    callback(false)
-                }
-            }
-        } catch {
-            callback(false)
-            print("Failed to delete movie: \(error.localizedDescription)")
         }
     }
     
@@ -96,17 +93,20 @@ class MovieLocalDataSource {
         }
     }
     
-    func getUserRate(movieId: Int, callback: (Double?) -> Void) {
+    func deleteStorageMovie(movieId: Int, callback: (Bool) -> Void) {
         do {
             let realm = try Realm()
-            if let movieData = realm.object(ofType: MovieData.self, forPrimaryKey: movieId) {
-                callback(movieData.userRate)
-            } else {
-                callback(nil)
+            try realm.write {
+                if let storedMovie = realm.object(ofType: MovieData.self, forPrimaryKey: movieId) {
+                    realm.delete(storedMovie)
+                    callback(true)
+                } else {
+                    callback(false)
+                }
             }
         } catch {
-            print("Failed to get user rate: \(error.localizedDescription)")
-            callback(nil)
+            callback(false)
+            print("Failed to delete movie: \(error.localizedDescription)")
         }
     }
 }

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Kingfisher
 
 class StorageViewController: UIViewController {
     
@@ -41,17 +40,25 @@ class StorageViewController: UIViewController {
         setup()
         addViews()
         setupViewModel()
+        setEmptyState()
         getRateLabel()
         setNavigationBar()
         setCollectionView()
         setConstraints()
+        reloadCollectionView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        setEmptyState()
         setupViewModel()
         getRateLabel()
+        reloadCollectionView()
+    }
+    
+    private func reloadCollectionView() {
+        movieCollectionView.reloadData()
     }
     
     private func setup() {
@@ -64,13 +71,18 @@ class StorageViewController: UIViewController {
     }
     
     private func setupViewModel() {
+        storageViewModel.getStorageMovieList { [weak self] in
+            DispatchQueue.main.async {
+                self?.reloadCollectionView()
+            }
+        }
+    }
+    
+    private func setEmptyState() {
         let movies = storageViewModel.movieStorageResult.value.movies
-        storageViewModel.getStorageMovieList()
-        
         emptyLabel.isHidden = !movies.isEmpty
         
-        movieCollectionView.reloadData()
-       
+        reloadCollectionView()
     }
     
     private func getRateLabel() {
@@ -145,9 +157,10 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedMovie = storageViewModel.movieStorageResult.value.movies[indexPath.item]
         let detailVC = MovieDetailViewController()
         detailVC.modalPresentationStyle = .fullScreen
-        detailVC.selectedIndexPath = indexPath
+        detailVC.selectedMovieId = selectedMovie.id
         detailVC.delegate = self
         self.present(detailVC, animated: false, completion: nil)
     }
