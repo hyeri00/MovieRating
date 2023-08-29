@@ -3,8 +3,7 @@
 
 [App Store 출시](https://apps.apple.com/kr/app/mocord/id6451357193)
 
-
-
+</br> </br>
 
 ## Introduce
 MoCord는 나만의 영화 리스트를 만드는 iOS 어플리케이션입니다.
