@@ -1,5 +1,5 @@
 //
-//  MovieCell.swift
+//  MovieTableViewCell.swift
 //  MovieRating
 //
 //  Created by 혜리 on 2023/04/03.
@@ -7,11 +7,10 @@
 
 import UIKit
 
-class MovieCell: UITableViewCell {
+class MovieTableViewCell: UITableViewCell {
         
     var thumbnailImage: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(named: "poster")
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
@@ -25,9 +24,8 @@ class MovieCell: UITableViewCell {
         return label
     }()
     
-    var castLabel: UILabel = {
+    var genreLabel: UILabel = {
         let label = UILabel()
-        label.text = "현빈"
         label.textColor = .black
         label.font = .systemFont(ofSize: 15)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -42,7 +40,6 @@ class MovieCell: UITableViewCell {
     
     var ratingLabel: UILabel = {
         let label = UILabel()
-        label.text = "9.4"
         label.textColor = .red
         label.font = .systemFont(ofSize: 15)
         return label
@@ -58,19 +55,18 @@ class MovieCell: UITableViewCell {
         return view
     }()
     
-    private var storageButton: UIButton = {
+    lazy var storageButton: UIButton = {
         let button = UIButton(type: .custom)
-        let image = UIImage(systemName: "bookmark")
-        button.setImage(image, for: .normal)
+        button.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        button.tintColor = .black
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
+        
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         addViews()
-        setupAddTarget()
         setTableViewCell()
         setConstraints()
     }
@@ -82,13 +78,9 @@ class MovieCell: UITableViewCell {
     private func addViews() {
         addSubview(thumbnailImage)
         addSubview(titleAndYearLabel)
-        addSubview(castLabel)
+        addSubview(genreLabel)
         addSubview(ratingStackView)
-        addSubview(storageButton)
-    }
-    
-    private func setupAddTarget() {
-        storageButton.addTarget(self, action: #selector(storageSend), for: .touchUpInside)
+        contentView.addSubview(storageButton)
     }
     
     private func setTableViewCell() {
@@ -105,34 +97,21 @@ class MovieCell: UITableViewCell {
             
             titleAndYearLabel.topAnchor.constraint(equalTo: topAnchor, constant: 15),
             titleAndYearLabel.leadingAnchor.constraint(equalTo: thumbnailImage.trailingAnchor, constant: 15),
-            titleAndYearLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -30),
+            titleAndYearLabel.trailingAnchor.constraint(equalTo: storageButton.trailingAnchor, constant: -15),
             
-            castLabel.topAnchor.constraint(equalTo: titleAndYearLabel.bottomAnchor, constant: 20),
-            castLabel.leadingAnchor.constraint(equalTo: thumbnailImage.trailingAnchor, constant: 15),
-            castLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -30),
+            genreLabel.leadingAnchor.constraint(equalTo: thumbnailImage.trailingAnchor, constant: 15),
+            genreLabel.trailingAnchor.constraint(equalTo: storageButton.trailingAnchor, constant: -15),
+            genreLabel.bottomAnchor.constraint(equalTo: ratingStackView.topAnchor, constant: -5),
             
             ratingImage.widthAnchor.constraint(equalToConstant: 15),
             ratingImage.heightAnchor.constraint(equalToConstant: 15),
             
-            ratingStackView.topAnchor.constraint(equalTo: castLabel.bottomAnchor, constant: 5),
             ratingStackView.leadingAnchor.constraint(equalTo: thumbnailImage.trailingAnchor, constant: 15),
-            ratingStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -30),
+            ratingStackView.trailingAnchor.constraint(equalTo: storageButton.trailingAnchor, constant: -15),
+            ratingStackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -15),
             
             storageButton.centerYAnchor.constraint(equalTo: centerYAnchor),
             storageButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -30)
         ])
-    }
-    
-    @objc private func storageSend() {
-        if storageButton.isSelected == true {
-            storageButton.isSelected = false
-            let image = UIImage(systemName: "bookmark")
-            storageButton.setImage(image, for: .normal)
-            
-        } else {
-            storageButton.isSelected = true
-            let image = UIImage(systemName: "bookmark.fill")
-            storageButton.setImage(image, for: .normal)
-        }
     }
 }

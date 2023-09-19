@@ -20,16 +20,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         
         let homeTableViewController = UINavigationController(rootViewController: HomeTableViewController())
-        let myListViewController = UINavigationController(rootViewController: MyListViewController())
+        let storageViewController = UINavigationController(rootViewController: StorageViewController())
         
         let tabBarController = UITabBarController()
-        tabBarController.setViewControllers([homeTableViewController, myListViewController], animated: true)
+        tabBarController.setViewControllers([homeTableViewController, storageViewController], animated: true)
         
         if let items = tabBarController.tabBar.items {
-            items[0].title = "홈"
+            items[0].title = Home.navigationBarTitle
             items[0].image = UIImage(systemName: "house.fill")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 13, weight: .light))
             
-            items[1].title = "보관함"
+            items[1].title = Storage.navigationBarTitle
             items[1].image = UIImage(systemName: "archivebox.fill")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 13, weight: .light))
             
         }

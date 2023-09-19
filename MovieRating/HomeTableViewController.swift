@@ -6,26 +6,74 @@
 //
 
 import UIKit
-import SDWebImage
 
 class HomeTableViewController: UITableViewController {
-
-    private var movieTableView: UITableView = {
-        let view = UITableView()
-        view.backgroundColor = .white
-        view.rowHeight = 120
-        view.register(MovieCell.self, forCellReuseIdentifier: "MovieCell")
+    
+    private var searchTask: DispatchWorkItem?
+    private let toast = ToastMessage()
+    
+    private let homeViewModel: HomeViewModel! = HomeViewModel()
+    
+    private var emptyImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "search")?.withTintColor(.black, renderingMode: .alwaysOriginal)
+        return imageView
+    }()
+    
+    private var emptyLabel: UILabel = {
+        let label = UILabel()
+        label.text = Home.emptyState
+        label.textColor = .black
+        label.font = .boldSystemFont(ofSize: 14)
+        return label
+    }()
+    
+    private lazy var stackView: UIStackView = {
+        let view = UIStackView(arrangedSubviews: [emptyImage, emptyLabel])
+        view.spacing = 10
+        view.axis = .vertical
+        view.distribution = .fill
+        view.alignment = .fill
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    var movies = [Movie]()
-    var query: String?
+    private var totalCountLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 14)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private var movieTableView: UITableView = {
+        let view = UITableView()
+        view.backgroundColor = .white
+        view.rowHeight = 120
+        view.register(MovieTableViewCell.self, forCellReuseIdentifier: "MovieTableViewCell")
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private var emptySearchLabel: UILabel = {
+        let label = UILabel()
+        label.text = Home.emptySearchState
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 14)
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setup()
+        setupViewModel()
         addViews()
         setTableView()
         setNavigationBar()
@@ -36,8 +84,43 @@ class HomeTableViewController: UITableViewController {
         view.backgroundColor = .white
     }
     
+    private func setupViewModel() {
+        homeViewModel.movieSearchResult.bind { result in
+            print("movies \(result.movies.count) \(result.totalCount)")
+            
+            if !result.indexPaths.isEmpty {
+                self.movieTableView.insertRows(at: result.indexPaths, with: .automatic)
+            } else {
+                self.movieTableView.reloadData()
+            }
+            self.setTotalCountLabel(result.totalCount)
+            
+            let isMovieNotEmpty = !result.movies.isEmpty
+            self.emptySearchLabel.isHidden = isMovieNotEmpty
+            self.stackView.isHidden = isMovieNotEmpty || !self.homeViewModel.query.isEmpty
+            self.totalCountLabel.isHidden = !isMovieNotEmpty
+        }
+        
+        homeViewModel.isBookmarkedMovie.bind { movie in
+            if movie != nil {
+                self.toast.showToast(image: UIImage(named: "check-circle")!,
+                                     message: Toast.saveMessage)
+            }
+        }
+        
+        homeViewModel.isUnbookmarkedMovie.bind { movie in
+            if movie != nil {
+                self.toast.showToast(image: UIImage(named: "check-circle")!,
+                                     message: Toast.deleteMessage)
+            }
+        }
+    }
+    
     private func addViews() {
+        view.addSubview(totalCountLabel)
         view.addSubview(movieTableView)
+        view.addSubview(stackView)
+        view.addSubview(emptySearchLabel)
     }
     
     private func setTableView() {
@@ -46,62 +129,84 @@ class HomeTableViewController: UITableViewController {
     }
     
     private func setNavigationBar() {
-        navigationController?.navigationBar.barTintColor = .white
+        let searchController = UISearchController(searchResultsController: nil)
+        navigationItem.searchController = searchController
+        
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
         
-        navigationItem.title = "홈"
+        navigationItem.title = Home.navigationBarTitle
         navigationItem.searchController = UISearchController(searchResultsController: nil)
-        navigationItem.searchController?.searchBar.placeholder = "검색어를 입력하세요"
+        navigationItem.searchController?.searchBar.placeholder = Home.searchBarPlaceHolder
         navigationItem.searchController?.searchBar.delegate = self
     }
     
     private func setConstraints() {
         NSLayoutConstraint.activate([
-            movieTableView.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
+            emptyImage.widthAnchor.constraint(equalToConstant: 100),
+            emptyImage.heightAnchor.constraint(equalToConstant: 100),
+            
+            stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -70),
+            
+            totalCountLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
+            totalCountLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            
+            movieTableView.topAnchor.constraint(equalTo: totalCountLabel.bottomAnchor, constant: 5),
             movieTableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             movieTableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            movieTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            movieTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            
+            emptySearchLabel.centerXAnchor.constraint(equalTo: movieTableView.centerXAnchor),
+            emptySearchLabel.centerYAnchor.constraint(equalTo: movieTableView.centerYAnchor)
         ])
     }
     
     private func searchMovies(query: String) {
-
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = "api.themoviedb.org"
-        urlComponents.path = "/3/search/movie"
-        urlComponents.queryItems = [
-            URLQueryItem(name: "api_key", value: "73861d304f91be437d4465b52141a39b"),
-            URLQueryItem(name: "query", value: query),
-            URLQueryItem(name: "language", value: "ko-KR")
-        ]
-
-        guard let url = urlComponents.url else {
-              print("유효하지 않는 URL")
-              return
-          }
-
-        var request = URLRequest(url: url)
-            request.httpMethod = "GET"
-
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, error == nil else {
-                print(error?.localizedDescription ?? "Unknown error")
-                return
-            }
-            do {
-                let decoder = JSONDecoder()
-                let response = try decoder.decode(Response.self, from: data)
-                self.movies = response.results
-                DispatchQueue.main.async {
-                    self.movieTableView.reloadData()
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
+        if query.isEmpty {
+            emptySearchLabel.isHidden = true
+            stackView.isHidden = false
+            totalCountLabel.isHidden = true
+            
+            homeViewModel.resetPages()
+            movieTableView.reloadData()
+            return
         }
-        task.resume()
+        
+        homeViewModel.search(query: query)
+    }
+    
+    private func getMovieData(at indexPath: IndexPath) -> Int! {
+        guard movieTableView.cellForRow(at: indexPath) is MovieTableViewCell else {
+            return nil
+        }
+        
+        return homeViewModel.movieSearchResult.value.movies[indexPath.row].id
+    }
+    
+    private func setTotalCountLabel(_ totalCount: Int) {
+        let countString = String(format: Home.movieSearchCount, totalCount)
+        self.totalCountLabel.text = countString
+        print("총 영화 개수: \(totalCount)")
+    }
+    
+    @objc private func storageButtonTapped(_ sender: UIButton) {
+        guard let cell = sender.superview?.superview as? MovieTableViewCell,
+              let indexPath = movieTableView.indexPath(for: cell),
+              let movieId = getMovieData(at: indexPath)
+        else {
+            return
+        }
+        
+        if sender.isSelected {
+            sender.isSelected = false
+            sender.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        } else {
+            sender.isSelected = true
+            sender.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
+        }
+        
+        homeViewModel.changeBookmark(movieId: movieId)
     }
 }
 
@@ -109,59 +214,109 @@ class HomeTableViewController: UITableViewController {
 extension HomeTableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return movies.count
+        return homeViewModel.movieSearchResult.value.movies.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieTableViewCell", for: indexPath) as! MovieTableViewCell
+        
+        let movies = homeViewModel.movieSearchResult.value.movies
+        
+        guard indexPath.row < movies.count else { return cell }
+        
         let movie = movies[indexPath.row]
-        cell.titleAndYearLabel.text = "\(movie.title) (\(movie.releaseDate))"
         if let posterPath = movie.posterPath {
             let posterURL = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
-            cell.thumbnailImage.sd_setImage(with: posterURL, placeholderImage: UIImage(named: "placeholder"))
+            cell.thumbnailImage.kf.setImage(with: posterURL,
+                                            placeholder: UIImage(systemName: "photo")?.withTintColor(.black, renderingMode: .alwaysOriginal))
         }
-
+        
+        cell.titleAndYearLabel.text = movie.year.isEmpty ? "\(movie.title)" : "\(movie.title) (\(movie.year))"
+        cell.genreLabel.text = movie.genres.isEmpty ? movieInfo.emptyInfo : movie.genres.map { $0.name }.joined(separator: ", ")
+        cell.ratingLabel.text = movie.voteAverageString
+        
+        cell.storageButton.addTarget(self, action: #selector(storageButtonTapped(_:)), for: .touchUpInside)
+        cell.storageButton.tag = indexPath.row
+        
+        let isBookmarked = movie.isBookmarked
+        if isBookmarked {
+            cell.storageButton.isSelected = true
+            cell.storageButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
+        } else {
+            cell.storageButton.isSelected = false
+            cell.storageButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        }
+        
         return cell
     }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let movie = homeViewModel.movieSearchResult.value.movies[indexPath.row]
+        presentSafariViewController(withMovieID: movie.id)
+    }
+    
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        
+        if offsetY > contentHeight - scrollView.frame.size.height {
+            homeViewModel.loadNextPage()
+        }
+    }
 }
-
 
 extension HomeTableViewController: UISearchBarDelegate {
     
-    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-        self.movieTableView.reloadData()
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        homeViewModel.resetPages()
+        movieTableView.reloadData()
+        
+        searchTask?.cancel()
+        
+        let searchTask = DispatchWorkItem { [weak self] in
+            if searchText.isEmpty {
+                DispatchQueue.main.async {
+                    self?.stackView.isHidden = false
+                    self?.emptySearchLabel.isHidden = true
+                }
+            } else {
+                self?.searchMovies(query: searchText)
+                self?.movieTableView.isHidden = false
+            }
+            self?.movieTableView.reloadData()
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: searchTask)
+        
+        stackView.isHidden = true
+        self.searchTask = searchTask
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-            
-        guard let searchTerm = searchBar.text, searchTerm.isEmpty == false else { return }
-        
-        DispatchQueue.main.async {
-            self.movieTableView.reloadData()
+        searchTask?.cancel()
+        guard let searchTerm = searchBar.text, searchTerm.isEmpty == false else {
+            searchMovies(query: "")
+            return
         }
         
-        if let text = searchBar.text {
-            query = text
-
-            searchMovies(query: query!)
-            print("\(text)")
+        DispatchQueue.main.async { [self] in
+            movieTableView.reloadData()
+            movieTableView.isHidden = false
+        }
+        homeViewModel.resetPages()
+        
+        if searchBar.text != nil {
+            searchMovies(query: searchBar.text!)
         }
     }
-}
-
-
-struct Response: Codable {
-    let results: [Movie]
-}
-
-struct Movie: Codable {
-    let title: String
-    let releaseDate: String
-    let posterPath: String?
     
-    enum CodingKeys: String, CodingKey {
-        case title = "title"
-        case releaseDate = "release_date"
-        case posterPath = "poster_path"
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        homeViewModel.clear()
+        movieTableView.isHidden = true
+        stackView.isHidden = false
+        totalCountLabel.isHidden = true
+        
+        print(#function)
     }
 }
