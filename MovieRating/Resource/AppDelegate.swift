@@ -14,34 +14,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
         
         let homeViewController = HomeTableViewController()
+        
         let navigationController = UINavigationController(rootViewController: homeViewController)
+        
         window?.rootViewController = navigationController
         
         let config = Realm.Configuration(
-            schemaVersion: 3,
+            schemaVersion: 2, 
             migrationBlock: { migration, oldSchemaVersion in
-                if oldSchemaVersion < 3 {
-                    migration.deleteData(forType: "MovieData")
+                if oldSchemaVersion < 1 {
+                    migration.enumerateObjects(ofType: MovieData.className()) { oldObject, newObject in
+                        newObject!["userRate"] = 0.0
+                    }
                 }
-                // Additional migration blocks can be added here for further schema changes
+                if oldSchemaVersion < 2 {
+                    migration.enumerateObjects(ofType: MovieData.className()) { oldObject, newObject in
+                        newObject!["isBookmarked"] = false
+                    }
+                }
             })
         Realm.Configuration.defaultConfiguration = config
-        
-        // Perform migration before opening the Realm
-        do {
-            _ = try Realm(configuration: config)
-        } catch {
-            // Handle error in migration process
-            print("Error in migration: \(error)")
-        }
-        
+        let _ = try! Realm()
         return true
     }
-
 
     // MARK: UISceneSession Lifecycle
 
