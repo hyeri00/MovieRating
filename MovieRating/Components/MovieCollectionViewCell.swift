@@ -27,7 +27,7 @@ class MovieCollectionViewCell: UICollectionViewCell {
     
     var evaluationLabel: UILabel = {
         let label = UILabel()
-        label.text = "평가 안 함 ⭐️ 0.0"
+        label.text = Storage.unevaluationState
         label.textColor = .lightGray
         label.font = .systemFont(ofSize: 13)
         label.isUserInteractionEnabled = true

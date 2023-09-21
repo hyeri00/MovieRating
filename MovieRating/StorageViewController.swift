@@ -6,15 +6,14 @@
 //
 
 import UIKit
-import RealmSwift
 
 class StorageViewController: UIViewController {
     
-    private let movieRepository: MovieRepository! = MovieRepository.shared
+    private let storageViewModel: StorageViewModel! = StorageViewModel()
     
     let emptyLabel: UILabel = {
         let label = UILabel()
-        label.text = "보관함 비어있음."
+        label.text = Storage.emptyState
         label.textColor = .black
         label.font = .systemFont(ofSize: 14)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -34,33 +33,32 @@ class StorageViewController: UIViewController {
         view.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: "MovieCollectionViewCell")
         return view
     }()
-    
-    private var realm: Realm!
-    private var moviesData: Results<MovieData>!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setup()
         addViews()
-        getMovies()
+        setupViewModel()
+        setEmptyState()
         getRateLabel()
         setNavigationBar()
         setCollectionView()
         setConstraints()
-        
-        do {
-            realm = try Realm()
-        } catch let error as NSError {
-            print("Error: \(error.localizedDescription)")
-        }
+        reloadCollectionView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        getMovies()
+        setEmptyState()
+        setupViewModel()
         getRateLabel()
+        reloadCollectionView()
+    }
+    
+    private func reloadCollectionView() {
+        movieCollectionView.reloadData()
     }
     
     private func setup() {
@@ -72,18 +70,19 @@ class StorageViewController: UIViewController {
         view.addSubview(movieCollectionView)
     }
     
-    private func getMovies() {
-        movieRepository.getStorageMovieList { movies in
-            moviesData = movies
-            
-            if moviesData.isEmpty {
-                self.emptyLabel.isHidden = false
-            } else {
-                self.emptyLabel.isHidden = true
+    private func setupViewModel() {
+        storageViewModel.getStorageMovieList { [weak self] in
+            DispatchQueue.main.async {
+                self?.reloadCollectionView()
             }
-            
-            movieCollectionView.reloadData()
         }
+    }
+    
+    private func setEmptyState() {
+        let movies = storageViewModel.movieStorageResult.value.movies
+        emptyLabel.isHidden = !movies.isEmpty
+        
+        reloadCollectionView()
     }
     
     private func getRateLabel() {
@@ -98,7 +97,7 @@ class StorageViewController: UIViewController {
         navigationController?.navigationBar.tintColor = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
         
-        navigationItem.title = "보관함"
+        navigationItem.title = Storage.navigationBarTitle
     }
     
     private func setCollectionView() {
@@ -118,6 +117,11 @@ class StorageViewController: UIViewController {
         ])
     }
     
+    private func configureEvaluationLabel(forCell cell: MovieCollectionViewCell, withRate rate: CGFloat) {
+        cell.evaluationLabel.text = rate > 0.0 ? "\(Storage.evaluationState) \(rate)" : Storage.unevaluationState
+        cell.evaluationLabel.textColor = rate > 0.0 ? .black : .lightGray
+    }
+    
     @objc private func updateEvaluationLabel(notification: Notification) {
         guard let userInfo = notification.userInfo,
             let rate = userInfo["rate"] as? CGFloat,
@@ -125,16 +129,8 @@ class StorageViewController: UIViewController {
             let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
                 return
         }
-        let movie = moviesData[cellIndex.item]
-
-        movieRepository.updateEvaluation(movie: movie, changedRating: rate) { isSuccess in
-            
-        }
         
-        selectedCell.evaluationLabel.text = "평가 함 ⭐️ \(rate)"
-        selectedCell.evaluationLabel.textColor = .black
-
-        print("userInfo: \(userInfo)")
+        configureEvaluationLabel(forCell: selectedCell, withRate: rate)
     }
 }
 
@@ -145,34 +141,27 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("들어온 data count: \(moviesData.count)")
-        return self.moviesData?.count ?? 0
+        print("들어온 영화 data count: \(storageViewModel.movieStorageResult.value.movies.count)")
+        return storageViewModel.movieStorageResult.value.movies.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
-        let movie = moviesData[indexPath.item]
-        cell.thumbnailImage.image = UIImage(data: movie.thumbnailImageData ?? Data())
-        cell.titleLabel.text = "\(movie.title)"
+        let movie = storageViewModel.movieStorageResult.value.movies[indexPath.item]
         
-        if movie.userRate > 0 {
-            cell.evaluationLabel.text = "평가 함 ⭐️ \(movie.userRate)"
-            cell.evaluationLabel.textColor = .black
-        } else {
-            cell.evaluationLabel.text = "평가 안 함 ⭐️ 0.0"
-            cell.evaluationLabel.textColor = .lightGray
-        }
+        cell.thumbnailImage.setImage(withPosterPath: movie.posterPath)
+        cell.titleLabel.text = movie.year.isEmpty ? "\(movie.title)" : "\(movie.title) (\(movie.year))"
+        configureEvaluationLabel(forCell: cell, withRate: movie.userRate)
+
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedMovie = storageViewModel.movieStorageResult.value.movies[indexPath.item]
         let detailVC = MovieDetailViewController()
-        detailVC.modalPresentationStyle = .overFullScreen
-        
-        let selectedMovie = realm.objects(MovieData.self)[indexPath.item]
-        detailVC.moviesData = selectedMovie
+        detailVC.modalPresentationStyle = .fullScreen
+        detailVC.selectedMovieId = selectedMovie.id
         detailVC.delegate = self
-        
         self.present(detailVC, animated: false, completion: nil)
     }
 }

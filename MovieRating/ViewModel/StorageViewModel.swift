@@ -1,0 +1,32 @@
+//
+//  StorageViewModel.swift
+//  MovieRating
+//
+//  Created by 혜리 on 2023/07/09.
+//
+
+import UIKit
+import Foundation
+
+class StorageViewModel {
+    
+    private let movieRepository: MovieRepository! = MovieRepository.shared
+
+    let movieStorageResult: Observer<MovieStorageResult> = Observer(MovieStorageResult.EMPTY)
+    
+    init() {
+        
+    }
+    
+    func getStorageMovieList(completion: @escaping () -> Void) {
+        movieRepository.getStorageMovieList { movie in
+            self.movieStorageResult.value.movies = movie
+        }
+        completion()
+    }
+    
+    func updateEvaluationLabel(movie: Movie, rate: CGFloat) {
+        movieRepository.updateEvaluation(movie: movie, changedRating: rate) { _ in
+        }
+    }
+}
