@@ -15,7 +15,7 @@ class StorageViewController: UIViewController {
     
     // MARK: - UI
     
-    let emptyLabel: UILabel = {
+    private let emptyLabel: UILabel = {
         let label = UILabel()
         label.text = Storage.emptyState
         label.textColor = .black
@@ -24,7 +24,7 @@ class StorageViewController: UIViewController {
         return label
     }()
     
-    let movieCollectionView: UICollectionView = {
+    private let movieCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 5
