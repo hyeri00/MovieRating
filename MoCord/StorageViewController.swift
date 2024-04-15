@@ -9,7 +9,11 @@ import UIKit
 
 class StorageViewController: UIViewController {
     
+    // MARK: - ViewModel
+    
     private let storageViewModel: StorageViewModel! = StorageViewModel()
+    
+    // MARK: - UI
     
     let emptyLabel: UILabel = {
         let label = UILabel()
@@ -33,7 +37,9 @@ class StorageViewController: UIViewController {
         view.register(MovieCollectionViewCell.self, forCellWithReuseIdentifier: "MovieCollectionViewCell")
         return view
     }()
-
+    
+    // MARK: - Life Cycles
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -50,12 +56,14 @@ class StorageViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
+        
         setEmptyState()
         setupViewModel()
         getRateLabel()
         reloadCollectionView()
     }
+    
+    // MARK: - Configure
     
     private func reloadCollectionView() {
         movieCollectionView.reloadData()
@@ -91,7 +99,7 @@ class StorageViewController: UIViewController {
                                                name: NSNotification.Name("didChangeRate"),
                                                object: nil)
     }
-
+    
     private func setNavigationBar() {
         navigationController?.navigationBar.barTintColor = .white
         navigationController?.navigationBar.tintColor = .black
@@ -124,16 +132,17 @@ class StorageViewController: UIViewController {
     
     @objc private func updateEvaluationLabel(notification: Notification) {
         guard let userInfo = notification.userInfo,
-            let rate = userInfo["rate"] as? CGFloat,
-            let cellIndex = movieCollectionView.indexPathsForSelectedItems?.first,
-            let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
-                return
+              let rate = userInfo["rate"] as? CGFloat,
+              let cellIndex = movieCollectionView.indexPathsForSelectedItems?.first,
+              let selectedCell = movieCollectionView.cellForItem(at: cellIndex) as? MovieCollectionViewCell else {
+            return
         }
         
         configureEvaluationLabel(forCell: selectedCell, withRate: rate)
     }
 }
 
+// MARK: - UICollectionView
 
 extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -144,7 +153,7 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
         print("들어온 영화 data count: \(storageViewModel.movieStorageResult.value.movies.count)")
         return storageViewModel.movieStorageResult.value.movies.count
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCollectionViewCell", for: indexPath) as! MovieCollectionViewCell
         let movie = storageViewModel.movieStorageResult.value.movies[indexPath.item]
@@ -152,7 +161,7 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
         cell.thumbnailImage.setImage(withPosterPath: movie.posterPath)
         cell.titleLabel.text = movie.year.isEmpty ? "\(movie.title)" : "\(movie.title) (\(movie.year))"
         configureEvaluationLabel(forCell: cell, withRate: movie.userRate)
-
+        
         return cell
     }
     
@@ -166,6 +175,7 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     }
 }
 
+// MARK: - Delegate
 
 extension StorageViewController: MovieDetailDelegate {
     func updateCollectionView() {
