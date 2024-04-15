@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C01A9452BCD1FD900AAE75F /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A9442BCD1FD900AAE75F /* Kingfisher */; };
+		1C01A9482BCD202100AAE75F /* Realm in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A9472BCD202100AAE75F /* Realm */; };
+		1C01A94A2BCD202100AAE75F /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A9492BCD202100AAE75F /* RealmSwift */; };
+		1C01A94D2BCD20D200AAE75F /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A94C2BCD20D200AAE75F /* SnapKit */; };
+		1C01A94F2BCD20D200AAE75F /* SnapKit-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A94E2BCD20D200AAE75F /* SnapKit-Dynamic */; };
 		1C0C7B232A0A26DA0097F22A /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C0C7B222A0A26DA0097F22A /* Protocol.swift */; };
 		1C1CBB602A5AF1FD00800A63 /* StorageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C1CBB5F2A5AF1FD00800A63 /* StorageViewModel.swift */; };
 		1C1CBB622A5AF61D00800A63 /* MovieStorageResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C1CBB612A5AF61D00800A63 /* MovieStorageResult.swift */; };
@@ -41,8 +46,22 @@
 		1CF1D7222A24BB0F00F392AB /* MovieSearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF1D7212A24BB0F00F392AB /* MovieSearchResult.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		1C1333042BCD21FE00B5A616 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		1C0C7B222A0A26DA0097F22A /* Protocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
+		1C1333052BCD220000B5A616 /* MoCord.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoCord.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C1CBB5F2A5AF1FD00800A63 /* StorageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageViewModel.swift; sourceTree = "<group>"; };
 		1C1CBB612A5AF61D00800A63 /* MovieStorageResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieStorageResult.swift; sourceTree = "<group>"; };
 		1C1CBB632A5B158200800A63 /* MovieDetailResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailResult.swift; sourceTree = "<group>"; };
@@ -64,7 +83,6 @@
 		1C8F5FC72A12763B00A58B1F /* MovieRemoteDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieRemoteDataSource.swift; sourceTree = "<group>"; };
 		1C8F5FC92A12764900A58B1F /* MovieLocalDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieLocalDataSource.swift; sourceTree = "<group>"; };
 		1CD6FE7E29FCEF4C00405FD6 /* MovieData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieData.swift; sourceTree = "<group>"; };
-		1CE1DB9829DA974400645F68 /* MoCord.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = MoCord.app; path = "/Users/hyeri/Downloads/MovieRating/build/Debug-iphoneos/MoCord.app"; sourceTree = "<absolute>"; };
 		1CE1DB9B29DA974400645F68 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1CE1DB9D29DA974400645F68 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		1CE1DB9F29DA974400645F68 /* HomeTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTableViewController.swift; sourceTree = "<group>"; };
@@ -83,6 +101,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C01A94F2BCD20D200AAE75F /* SnapKit-Dynamic in Frameworks */,
+				1C01A94A2BCD202100AAE75F /* RealmSwift in Frameworks */,
+				1C01A94D2BCD20D200AAE75F /* SnapKit in Frameworks */,
+				1C01A9482BCD202100AAE75F /* Realm in Frameworks */,
+				1C01A9452BCD1FD900AAE75F /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,6 +205,7 @@
 			isa = PBXGroup;
 			children = (
 				1CE1DB9A29DA974400645F68 /* MoCord */,
+				1C1333052BCD220000B5A616 /* MoCord.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -251,14 +275,22 @@
 				1CE1DB9529DA974400645F68 /* Frameworks */,
 				1CE1DB9629DA974400645F68 /* Resources */,
 				D1204AD3A2A441D710133C3A /* ShellScript */,
+				1C1333042BCD21FE00B5A616 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = MoCord;
+			packageProductDependencies = (
+				1C01A9442BCD1FD900AAE75F /* Kingfisher */,
+				1C01A9472BCD202100AAE75F /* Realm */,
+				1C01A9492BCD202100AAE75F /* RealmSwift */,
+				1C01A94C2BCD20D200AAE75F /* SnapKit */,
+				1C01A94E2BCD20D200AAE75F /* SnapKit-Dynamic */,
+			);
 			productName = MovieRating;
-			productReference = 1CE1DB9829DA974400645F68 /* MoCord.app */;
+			productReference = 1C1333052BCD220000B5A616 /* MoCord.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -285,6 +317,11 @@
 				Base,
 			);
 			mainGroup = 1CE1DB8F29DA974400645F68;
+			packageReferences = (
+				1C01A9432BCD1FD900AAE75F /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				1C01A9462BCD202100AAE75F /* XCRemoteSwiftPackageReference "realm-swift" */,
+				1C01A94B2BCD20D200AAE75F /* XCRemoteSwiftPackageReference "SnapKit" */,
+			);
 			productRefGroup = 1CE1DB8F29DA974400645F68;
 			projectDirPath = "";
 			projectRoot = "";
@@ -315,7 +352,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MovieRating/Pods-MovieRating-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -594,6 +630,61 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1C01A9432BCD1FD900AAE75F /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.11.0;
+			};
+		};
+		1C01A9462BCD202100AAE75F /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-swift";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		1C01A94B2BCD20D200AAE75F /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1C01A9442BCD1FD900AAE75F /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C01A9432BCD1FD900AAE75F /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		1C01A9472BCD202100AAE75F /* Realm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C01A9462BCD202100AAE75F /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = Realm;
+		};
+		1C01A9492BCD202100AAE75F /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C01A9462BCD202100AAE75F /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
+		};
+		1C01A94C2BCD20D200AAE75F /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C01A94B2BCD20D200AAE75F /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		1C01A94E2BCD20D200AAE75F /* SnapKit-Dynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C01A94B2BCD20D200AAE75F /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = "SnapKit-Dynamic";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1CE1DB9029DA974400645F68 /* Project object */;
 }
