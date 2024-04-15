@@ -184,7 +184,7 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
     ) {
         let selectedMovie = storageViewModel.movieStorageResult.value.movies[indexPath.item]
         let detailVC = MovieDetailViewController()
-        detailVC.modalPresentationStyle = .fullScreen
+        detailVC.modalPresentationStyle = .overFullScreen
         detailVC.selectedMovieId = selectedMovie.id
         detailVC.delegate = self
         self.present(detailVC, animated: false, completion: nil)
