@@ -45,15 +45,6 @@ class StorageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        addViews()
-        setupViewModel()
-        setEmptyState()
-        getRateLabel()
-        setNavigationBar()
-        setCollectionView()
-        setConstraints()
-        reloadCollectionView()
-        
         self.configure()
     }
     
@@ -62,45 +53,35 @@ class StorageViewController: UIViewController {
         
         setEmptyState()
         setupViewModel()
-        getRateLabel()
-        reloadCollectionView()
+        showRatings()
+        refresh()
     }
     
     // MARK: - Configure
     
     private func configure() {
-        view.backgroundColor = .white
-    }
-    
-    private func reloadCollectionView() {
-        movieCollectionView.reloadData()
-    }
-    
-    private func addViews() {
-        movieCollectionView.addSubview(emptyLabel)
-        view.addSubview(movieCollectionView)
+        self.view.backgroundColor = .white
+        
+        self.setupViewModel()
+        self.setEmptyState()
+        self.showRatings()
+        self.setNavigationBar()
+        self.makeConstraints()
     }
     
     private func setupViewModel() {
-        storageViewModel.getStorageMovieList { [weak self] in
+        self.storageViewModel.getStorageMovieList { [weak self] in
             DispatchQueue.main.async {
-                self?.reloadCollectionView()
+                self?.refresh()
             }
         }
     }
     
     private func setEmptyState() {
-        let movies = storageViewModel.movieStorageResult.value.movies
-        emptyLabel.isHidden = !movies.isEmpty
+        let movies = self.storageViewModel.movieStorageResult.value.movies
+        self.emptyLabel.isHidden = !movies.isEmpty
         
-        reloadCollectionView()
-    }
-    
-    private func getRateLabel() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateEvaluationLabel),
-                                               name: NSNotification.Name("didChangeRate"),
-                                               object: nil)
+        self.refresh()
     }
     
     private func setNavigationBar() {
@@ -111,29 +92,42 @@ class StorageViewController: UIViewController {
         navigationItem.title = Storage.navigationBarTitle
     }
     
-    private func setCollectionView() {
-        movieCollectionView.delegate = self
-        movieCollectionView.dataSource = self
+    private func makeConstraints() {
+        self.movieCollectionView.addSubview(self.emptyLabel)
+        self.view.addSubview(self.movieCollectionView)
+        
+        self.emptyLabel.snp.makeConstraints { make in
+            make.centerX.centerY.equalToSuperview()
+        }
+        
+        self.movieCollectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
     
-    private func setConstraints() {
-        NSLayoutConstraint.activate([
-            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            
-            movieCollectionView.topAnchor.constraint(equalTo: view.topAnchor),
-            movieCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            movieCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            movieCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+    private func refresh() {
+        self.movieCollectionView.reloadData()
     }
     
-    private func configureEvaluationLabel(forCell cell: MovieCollectionViewCell, withRate rate: CGFloat) {
+    private func showRatings() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateEvaluationLabel),
+            name: NSNotification.Name("didChangeRate"),
+            object: nil
+        )
+    }
+    
+    private func setEvaluation(
+        forCell cell: MovieCollectionViewCell,
+        withRate rate: CGFloat
+    ) {
         cell.evaluationLabel.text = rate > 0.0 ? "\(Storage.evaluationState) \(rate)" : Storage.unevaluationState
         cell.evaluationLabel.textColor = rate > 0.0 ? .black : .lightGray
     }
     
-    @objc private func updateEvaluationLabel(notification: Notification) {
+    @objc
+    private func updateEvaluationLabel(notification: Notification) {
         guard let userInfo = notification.userInfo,
               let rate = userInfo["rate"] as? CGFloat,
               let cellIndex = movieCollectionView.indexPathsForSelectedItems?.first,
@@ -141,7 +135,7 @@ class StorageViewController: UIViewController {
             return
         }
         
-        configureEvaluationLabel(forCell: selectedCell, withRate: rate)
+        self.setEvaluation(forCell: selectedCell, withRate: rate)
     }
 }
 
@@ -173,7 +167,7 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
         
         cell.thumbnailImage.setImage(withPosterPath: movie.posterPath)
         cell.titleLabel.text = movie.year.isEmpty ? "\(movie.title)" : "\(movie.title) (\(movie.year))"
-        configureEvaluationLabel(forCell: cell, withRate: movie.userRate)
+        setEvaluation(forCell: cell, withRate: movie.userRate)
         
         return cell
     }
@@ -194,7 +188,8 @@ extension StorageViewController: UICollectionViewDelegateFlowLayout, UICollectio
 // MARK: - Delegate
 
 extension StorageViewController: MovieDetailDelegate {
+    
     func updateCollectionView() {
-        movieCollectionView.reloadData()
+        self.refresh()
     }
 }
