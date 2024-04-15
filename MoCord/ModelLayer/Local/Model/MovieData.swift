@@ -5,6 +5,8 @@
 //  Created by 혜리 on 2023/04/29.
 //
 
+import Foundation
+
 import RealmSwift
 
 class MovieData: Object {
