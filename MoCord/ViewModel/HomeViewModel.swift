@@ -70,7 +70,7 @@ class HomeViewModel {
     
     func changeBookmark(movieId: Int) {
         if let movieIndex = movieSearchResult.value.movies.firstIndex(where: { $0.id == movieId }) {
-            var movie = movieSearchResult.value.movies[movieIndex]
+            let movie = movieSearchResult.value.movies[movieIndex]
             let isBookmarked = movie.isBookmarked
             movie.isBookmarked = !isBookmarked
 

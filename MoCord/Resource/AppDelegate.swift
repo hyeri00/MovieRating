@@ -38,6 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             // Handle error in migration process
             print("Error in migration: \(error)")
         }
+        sleep(1)
         
         return true
     }
