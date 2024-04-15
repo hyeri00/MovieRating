@@ -11,8 +11,8 @@
 		1C01A9482BCD202100AAE75F /* Realm in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A9472BCD202100AAE75F /* Realm */; };
 		1C01A94A2BCD202100AAE75F /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A9492BCD202100AAE75F /* RealmSwift */; };
 		1C01A94D2BCD20D200AAE75F /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A94C2BCD20D200AAE75F /* SnapKit */; };
-		1C01A94F2BCD20D200AAE75F /* SnapKit-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 1C01A94E2BCD20D200AAE75F /* SnapKit-Dynamic */; };
 		1C0C7B232A0A26DA0097F22A /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C0C7B222A0A26DA0097F22A /* Protocol.swift */; };
+		1C1333072BCD265700B5A616 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1C1333062BCD265700B5A616 /* SnapKit */; };
 		1C1CBB602A5AF1FD00800A63 /* StorageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C1CBB5F2A5AF1FD00800A63 /* StorageViewModel.swift */; };
 		1C1CBB622A5AF61D00800A63 /* MovieStorageResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C1CBB612A5AF61D00800A63 /* MovieStorageResult.swift */; };
 		1C1CBB642A5B158200800A63 /* MovieDetailResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C1CBB632A5B158200800A63 /* MovieDetailResult.swift */; };
@@ -101,11 +101,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1C01A94F2BCD20D200AAE75F /* SnapKit-Dynamic in Frameworks */,
 				1C01A94A2BCD202100AAE75F /* RealmSwift in Frameworks */,
 				1C01A94D2BCD20D200AAE75F /* SnapKit in Frameworks */,
 				1C01A9482BCD202100AAE75F /* Realm in Frameworks */,
 				1C01A9452BCD1FD900AAE75F /* Kingfisher in Frameworks */,
+				1C1333072BCD265700B5A616 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,7 +287,7 @@
 				1C01A9472BCD202100AAE75F /* Realm */,
 				1C01A9492BCD202100AAE75F /* RealmSwift */,
 				1C01A94C2BCD20D200AAE75F /* SnapKit */,
-				1C01A94E2BCD20D200AAE75F /* SnapKit-Dynamic */,
+				1C1333062BCD265700B5A616 /* SnapKit */,
 			);
 			productName = MovieRating;
 			productReference = 1C1333052BCD220000B5A616 /* MoCord.app */;
@@ -679,10 +679,10 @@
 			package = 1C01A94B2BCD20D200AAE75F /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
-		1C01A94E2BCD20D200AAE75F /* SnapKit-Dynamic */ = {
+		1C1333062BCD265700B5A616 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 1C01A94B2BCD20D200AAE75F /* XCRemoteSwiftPackageReference "SnapKit" */;
-			productName = "SnapKit-Dynamic";
+			productName = SnapKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
