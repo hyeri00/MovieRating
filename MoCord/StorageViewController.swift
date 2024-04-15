@@ -43,7 +43,6 @@ class StorageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setup()
         addViews()
         setupViewModel()
         setEmptyState()
@@ -52,6 +51,8 @@ class StorageViewController: UIViewController {
         setCollectionView()
         setConstraints()
         reloadCollectionView()
+        
+        self.configure()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -65,12 +66,12 @@ class StorageViewController: UIViewController {
     
     // MARK: - Configure
     
-    private func reloadCollectionView() {
-        movieCollectionView.reloadData()
+    private func configure() {
+        view.backgroundColor = .white
     }
     
-    private func setup() {
-        view.backgroundColor = .white
+    private func reloadCollectionView() {
+        movieCollectionView.reloadData()
     }
     
     private func addViews() {
