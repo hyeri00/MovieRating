@@ -1,8 +1,9 @@
-# Mocord
-나만의 영화 리스트
+# 🎬 Mocord
+![MoCord Icon](https://github.com/user-attachments/assets/0bc2620e-d6af-4009-a5b6-a479da9b43fa)
 
-[App Store](https://apps.apple.com/kr/app/mocord/id6451357193)
-
+<p align="center">
+<img width="200" src="https://github.com/user-attachments/assets/c41bd846-cdad-4624-a22a-a130a9b14b08">
+</p>
 </br> </br>
 
 ## Introduce
